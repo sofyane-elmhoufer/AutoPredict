@@ -1,0 +1,43 @@
+{
+  "modele_selectionne": "XGBoost",
+  "resultats_comparaison": {
+    "LinearRegression": {
+      "R2": 0.8249,
+      "MAE": 13480.28,
+      "RMSE": 22450.35,
+      "R2_cv_mean": 0.8021
+    },
+    "RandomForest": {
+      "R2": 0.8427,
+      "MAE": 12795.72,
+      "RMSE": 21277.54,
+      "R2_cv_mean": 0.824
+    },
+    "GradientBoosting": {
+      "R2": 0.8089,
+      "MAE": 15091.41,
+      "RMSE": 23449.33,
+      "R2_cv_mean": 0.8092
+    },
+    "XGBoost": {
+      "R2": 0.8618,
+      "MAE": 12434.19,
+      "RMSE": 19944.44,
+      "R2_cv_mean": 0.8526
+    }
+  },
+  "features_numeriques": [
+    "annee",
+    "kilometrage",
+    "puissance_fiscale"
+  ],
+  "features_categorielles": [
+    "marque",
+    "modele",
+    "carburant",
+    "boite_vitesses",
+    "etat",
+    "ville",
+    "premiere_main"
+  ]
+}
