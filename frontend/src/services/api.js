@@ -4,7 +4,7 @@ import axios from "axios";
 // de contact du frontend avec le monde extérieur : jamais d'appel direct
 // au modèle ML, toujours via l'API REST du backend.
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000/api",
   headers: {
     "Content-Type": "application/json",
   },
