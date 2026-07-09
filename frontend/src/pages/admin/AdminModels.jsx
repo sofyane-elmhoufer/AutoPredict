@@ -35,7 +35,7 @@ export function AdminModels() {
               <td className="p-3">{m.nomVersion}</td>
               <td className="p-3">{m.algorithme}</td>
               <td className="p-3">{m.scoreR2.toFixed(3)}</td>
-              <td className="p-3">{m.scoreMAE.toLocaleString("fr-FR")}</td>
+              <td className="p-3">{m.scoreMae.toLocaleString("fr-FR")}</td>
               <td className="p-3">{new Date(m.dateEntrainement).toLocaleDateString("fr-FR")}</td>
               <td className="p-3">
                 {m.statutActif ? (

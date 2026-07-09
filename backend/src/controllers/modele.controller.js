@@ -1,5 +1,6 @@
 const { ModeleML } = require('../models');
 const { sequelize } = require('../models');
+const { toCamelCase } = require('../utils/caseConverter');
 
 /**
  * GET /api/modeles
@@ -8,7 +9,7 @@ const { sequelize } = require('../models');
 async function listModeles(req, res, next) {
   try {
     const modeles = await ModeleML.findAll({ order: [['date_entrainement', 'DESC']] });
-    res.json({ modeles });
+    res.json({ modeles: toCamelCase(modeles) });
   } catch (err) {
     next(err);
   }
@@ -38,7 +39,7 @@ async function creerModele(req, res, next) {
       statut_actif: false,
     });
 
-    res.status(201).json({ message: 'Nouvelle version du modèle enregistrée.', modele });
+    res.status(201).json({ message: 'Nouvelle version du modèle enregistrée.', modele: toCamelCase(modele) });
   } catch (err) {
     next(err);
   }
@@ -67,7 +68,7 @@ async function activerModele(req, res, next) {
     await modele.save({ transaction: t });
 
     await t.commit();
-    res.json({ message: `Version ${modele.nom_version} activée avec succès.`, modele });
+    res.json({ message: `Version ${modele.nom_version} activée avec succès.`, modele: toCamelCase(modele) });
   } catch (err) {
     await t.rollback();
     next(err);

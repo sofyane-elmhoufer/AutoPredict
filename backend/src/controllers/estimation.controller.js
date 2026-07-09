@@ -43,7 +43,7 @@ async function getHistorique(req, res, next) {
       total: count,
       page,
       totalPages: Math.ceil(count / limit),
-      estimations: rows,
+      estimations: rows.map((row) => estimationService.formatResultat(row, row.source_resultat)),
     });
   } catch (err) {
     next(err);
@@ -59,7 +59,7 @@ async function getEstimationById(req, res, next) {
       where: { id_estimation: req.params.id, id_utilisateur: req.user.id },
     });
     if (!estimation) return res.status(404).json({ message: 'Estimation introuvable.' });
-    res.json({ estimation });
+    res.json({ estimation: estimationService.formatResultat(estimation, estimation.source_resultat) });
   } catch (err) {
     next(err);
   }
@@ -98,7 +98,9 @@ async function comparerEstimations(req, res, next) {
       where: { id_estimation: { [Op.in]: ids }, id_utilisateur: req.user.id },
     });
 
-    res.json({ estimations });
+    res.json({
+      estimations: estimations.map((e) => estimationService.formatResultat(e, e.source_resultat)),
+    });
   } catch (err) {
     next(err);
   }

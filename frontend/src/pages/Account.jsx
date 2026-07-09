@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext";
-import { exporterEstimation, getHistoriqueUtilisateur } from "../services/estimationService";
+import { exporterEstimation, getHistorique } from "../services/estimationService";
 
 function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
@@ -18,7 +18,7 @@ export function Account() {
 
   const { data: historique = [], isLoading } = useQuery({
     queryKey: ["historique", utilisateur?.idUtilisateur],
-    queryFn: () => getHistoriqueUtilisateur(utilisateur.idUtilisateur),
+    queryFn: getHistorique,
     enabled: !!utilisateur,
   });
 
@@ -97,7 +97,7 @@ function ComparisonTable({ estimations }) {
               <td className="p-3">{e.kilometrage.toLocaleString("fr-FR")} km</td>
               <td className="p-3 font-medium">{e.prixEstime.toLocaleString("fr-FR")} DH</td>
               <td className="p-3">
-                {e.margeConfiance[0].toLocaleString("fr-FR")} — {e.margeConfiance[1].toLocaleString("fr-FR")} DH
+                {e.margeConfiance.min.toLocaleString("fr-FR")} — {e.margeConfiance.max.toLocaleString("fr-FR")} DH
               </td>
             </tr>
           ))}

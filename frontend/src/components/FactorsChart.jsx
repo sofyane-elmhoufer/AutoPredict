@@ -3,8 +3,13 @@ import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis
 // Visualise les facteurs explicatifs (importance SHAP) renvoyés par le
 // modèle ML via le backend. Positif = pousse le prix à la hausse,
 // négatif = pousse le prix à la baisse.
-export function FactorsChart({ facteurs }) {
-  const data = [...facteurs].sort((a, b) => Math.abs(b.importance) - Math.abs(a.importance));
+export function FactorsChart({ facteurs = [] }) {
+  if (!facteurs || facteurs.length === 0) {
+    return <p className="text-sm text-gray-500">Aucun facteur explicatif disponible.</p>;
+  }
+
+  // Le backend (cf. ml/src/api.py) renvoie des objets { feature, impact }.
+  const data = [...facteurs].sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact));
 
   return (
     <div className="h-64 w-full">
@@ -14,9 +19,9 @@ export function FactorsChart({ facteurs }) {
           <XAxis type="number" />
           <YAxis type="category" dataKey="feature" width={120} />
           <Tooltip />
-          <Bar dataKey="importance" radius={[0, 4, 4, 0]}>
+          <Bar dataKey="impact" radius={[0, 4, 4, 0]}>
             {data.map((entry, index) => (
-              <Cell key={index} fill={entry.importance >= 0 ? "#1f7a4d" : "#b45309"} />
+              <Cell key={index} fill={entry.impact >= 0 ? "#1f7a4d" : "#b45309"} />
             ))}
           </Bar>
         </BarChart>

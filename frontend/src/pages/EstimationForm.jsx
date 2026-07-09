@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { getMarques, getModeles, getReference } from "../services/catalogueService";
+import { getMarques, getModeles } from "../services/catalogueService";
 import { soumettreEstimation } from "../services/estimationService";
 
 const currentYear = new Date().getFullYear();
@@ -21,10 +21,12 @@ const schema = z.object({
     .min(1990)
     .max(currentYear),
   kilometrage: z.number({ invalid_type_error: "Kilométrage requis" }).int().min(0),
-  carburant: z.enum(["ESSENCE", "DIESEL", "HYBRIDE", "ELECTRIQUE"]),
+  carburant: z.enum(["ESSENCE", "DIESEL", "HYBRIDE", "ELECTRIQUE", "GPL"]),
   boiteVitesses: z.enum(["MANUELLE", "AUTOMATIQUE"]),
   puissanceFiscale: z.number({ invalid_type_error: "Puissance fiscale requise" }).int().min(1),
-  etatVehicule: z.enum(["NEUF", "TRES_BON_ETAT", "BON_ETAT", "A_REVOIR"]),
+  // Doit correspondre exactement à l'ENUM défini côté backend
+  // (backend/src/models/Estimation.js + validators/estimation.validator.js).
+  etatVehicule: z.enum(["EXCELLENT", "BON", "MOYEN", "A_REPARER"]),
   ville: z.string().min(1, "Ville requise"),
   nombreProprietaires: z.number({ invalid_type_error: "Champ requis" }).int().min(1),
 });
@@ -51,12 +53,10 @@ export function EstimationForm() {
     enabled: !!marqueChoisie,
   });
 
-  // Bornes anneeMin/anneeMax du modèle choisi, pour valider l'année en temps réel.
-  const { data: reference } = useQuery({
-    queryKey: ["reference", marqueChoisie, modeleChoisi],
-    queryFn: () => getReference(marqueChoisie, modeleChoisi),
-    enabled: !!marqueChoisie && !!modeleChoisi,
-  });
+  // Bornes anneeMin/anneeMax du modèle choisi : déjà présentes dans la liste
+  // `modeles` (getModeles renvoie { idVehiculeRef, modele, anneeMin, anneeMax }),
+  // pas besoin d'un second appel réseau.
+  const reference = modeles.find((m) => m.modele === modeleChoisi);
 
   const mutation = useMutation({
     mutationFn: soumettreEstimation,
@@ -105,8 +105,8 @@ export function EstimationForm() {
           <select {...register("modele")} className="mt-1 w-full rounded border px-3 py-2">
             <option value="">Sélectionner...</option>
             {modeles.map((m) => (
-              <option key={m} value={m}>
-                {m}
+              <option key={m.modele} value={m.modele}>
+                {m.modele}
               </option>
             ))}
           </select>
@@ -153,6 +153,7 @@ export function EstimationForm() {
             <option value="DIESEL">Diesel</option>
             <option value="HYBRIDE">Hybride</option>
             <option value="ELECTRIQUE">Électrique</option>
+            <option value="GPL">GPL</option>
           </select>
         </div>
 
@@ -179,10 +180,10 @@ export function EstimationForm() {
         <div>
           <label className="block text-sm font-medium">État du véhicule</label>
           <select {...register("etatVehicule")} className="mt-1 w-full rounded border px-3 py-2">
-            <option value="NEUF">Neuf</option>
-            <option value="TRES_BON_ETAT">Très bon état</option>
-            <option value="BON_ETAT">Bon état</option>
-            <option value="A_REVOIR">À revoir</option>
+            <option value="EXCELLENT">Excellent</option>
+            <option value="BON">Bon état</option>
+            <option value="MOYEN">État moyen</option>
+            <option value="A_REPARER">À réparer</option>
           </select>
         </div>
 

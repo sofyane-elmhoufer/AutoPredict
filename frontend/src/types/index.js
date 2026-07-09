@@ -3,9 +3,9 @@
 // à remplir les <select> et à documenter la forme des objets échangés
 // avec l'API (voir les commentaires JSDoc ci-dessous à titre de référence).
 
-export const CARBURANTS = ["ESSENCE", "DIESEL", "HYBRIDE", "ELECTRIQUE"];
+export const CARBURANTS = ["ESSENCE", "DIESEL", "HYBRIDE", "ELECTRIQUE", "GPL"];
 export const BOITES_VITESSES = ["MANUELLE", "AUTOMATIQUE"];
-export const ETATS_VEHICULE = ["NEUF", "TRES_BON_ETAT", "BON_ETAT", "A_REVOIR"];
+export const ETATS_VEHICULE = ["EXCELLENT", "BON", "MOYEN", "A_REPARER"];
 
 /**
  * @typedef {Object} CaracteristiquesVehicule
@@ -25,8 +25,8 @@ export const ETATS_VEHICULE = ["NEUF", "TRES_BON_ETAT", "BON_ETAT", "A_REVOIR"];
  * @typedef {Object} Estimation
  * @property {number} idEstimation
  * @property {number} prixEstime
- * @property {[number, number]} margeConfiance
- * @property {{feature: string, importance: number}[]} facteurs
- * @property {"CACHE"|"NOUVELLE_PREDICTION"} sourceResultat
+ * @property {{min: number, max: number}} margeConfiance
+ * @property {{feature: string, impact: number}[]} facteursExplicatifs
+ * @property {"CACHE"|"NOUVELLE_PREDICTION"} source
  * @property {string} dateEstimation
  */

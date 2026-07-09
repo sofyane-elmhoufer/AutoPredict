@@ -1,16 +1,16 @@
 {
-  "modele_selectionne": "XGBoost",
+  "modele_selectionne": "RandomForest",
   "resultats_comparaison": {
     "LinearRegression": {
       "R2": 0.8249,
-      "MAE": 13480.28,
-      "RMSE": 22450.35,
+      "MAE": 13480.5,
+      "RMSE": 22450.66,
       "R2_cv_mean": 0.8021
     },
     "RandomForest": {
       "R2": 0.8427,
-      "MAE": 12795.72,
-      "RMSE": 21277.54,
+      "MAE": 12795.32,
+      "RMSE": 21279.15,
       "R2_cv_mean": 0.824
     },
     "GradientBoosting": {
@@ -18,12 +18,6 @@
       "MAE": 15091.41,
       "RMSE": 23449.33,
       "R2_cv_mean": 0.8092
-    },
-    "XGBoost": {
-      "R2": 0.8618,
-      "MAE": 12434.19,
-      "RMSE": 19944.44,
-      "R2_cv_mean": 0.8526
     }
   },
   "features_numeriques": [

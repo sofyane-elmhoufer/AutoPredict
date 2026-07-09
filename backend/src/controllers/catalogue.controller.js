@@ -1,5 +1,6 @@
 const { Op } = require('sequelize');
 const { CatalogueVehicule } = require('../models');
+const { toCamelCase } = require('../utils/caseConverter');
 
 /**
  * GET /api/catalogue/marques
@@ -31,7 +32,7 @@ async function getModelesByMarque(req, res, next) {
       attributes: ['id_vehicule_ref', 'modele', 'annee_min', 'annee_max'],
       order: [['modele', 'ASC']],
     });
-    res.json({ modeles: references });
+    res.json({ modeles: toCamelCase(references) });
   } catch (err) {
     next(err);
   }
@@ -62,7 +63,12 @@ async function getCatalogue(req, res, next) {
       offset,
     });
 
-    res.json({ total: count, page, totalPages: Math.ceil(count / limit), references: rows });
+    res.json({
+      total: count,
+      page,
+      totalPages: Math.ceil(count / limit),
+      references: toCamelCase(rows),
+    });
   } catch (err) {
     next(err);
   }
@@ -88,7 +94,7 @@ async function ajouterReference(req, res, next) {
       annee_min: anneeMin,
       annee_max: anneeMax,
     });
-    res.status(201).json({ message: 'Référence ajoutée au catalogue.', reference });
+    res.status(201).json({ message: 'Référence ajoutée au catalogue.', reference: toCamelCase(reference) });
   } catch (err) {
     next(err);
   }
@@ -113,7 +119,7 @@ async function modifierReference(req, res, next) {
     }
 
     await reference.save();
-    res.json({ message: 'Référence mise à jour.', reference });
+    res.json({ message: 'Référence mise à jour.', reference: toCamelCase(reference) });
   } catch (err) {
     next(err);
   }

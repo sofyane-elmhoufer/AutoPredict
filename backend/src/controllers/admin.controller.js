@@ -1,6 +1,7 @@
 const { Op, fn, col } = require('sequelize');
 const { sequelize, Utilisateur, Estimation, ModeleML } = require('../models');
 const mlService = require('../services/mlService');
+const { toCamelCase } = require('../utils/caseConverter');
 
 /**
  * GET /api/admin/dashboard
@@ -50,7 +51,7 @@ async function getDashboard(req, res, next) {
             nomVersion: modeleActif.nom_version,
             algorithme: modeleActif.algorithme,
             scoreR2: modeleActif.score_r2,
-            scoreMAE: modeleActif.score_mae,
+            scoreMae: modeleActif.score_mae,
             dateEntrainement: modeleActif.date_entrainement,
           }
         : null,
@@ -89,7 +90,7 @@ async function superviserCache(req, res, next) {
       limit: 60,
     });
 
-    res.json({ repartitionParModele, parJour });
+    res.json({ repartitionParModele: toCamelCase(repartitionParModele), parJour: toCamelCase(parJour) });
   } catch (err) {
     next(err);
   }
@@ -121,7 +122,12 @@ async function listUtilisateurs(req, res, next) {
       offset,
     });
 
-    res.json({ total: count, page, totalPages: Math.ceil(count / limit), utilisateurs: rows });
+    res.json({
+      total: count,
+      page,
+      totalPages: Math.ceil(count / limit),
+      utilisateurs: toCamelCase(rows),
+    });
   } catch (err) {
     next(err);
   }
@@ -134,7 +140,9 @@ async function listUtilisateurs(req, res, next) {
  */
 async function gererUtilisateur(req, res, next) {
   try {
-    const utilisateur = await Utilisateur.findByPk(req.params.id);
+    const utilisateur = await Utilisateur.findByPk(req.params.id, {
+      attributes: { exclude: ['mot_de_passe_hash'] },
+    });
     if (!utilisateur) return res.status(404).json({ message: 'Utilisateur introuvable.' });
 
     const { statutCompte, role } = req.body;
@@ -147,7 +155,7 @@ async function gererUtilisateur(req, res, next) {
     }
 
     await utilisateur.save();
-    res.json({ message: 'Utilisateur mis à jour.', utilisateur });
+    res.json({ message: 'Utilisateur mis à jour.', utilisateur: toCamelCase(utilisateur) });
   } catch (err) {
     next(err);
   }

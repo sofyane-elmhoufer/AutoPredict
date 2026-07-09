@@ -11,7 +11,7 @@ export function EstimationResult() {
     return <Navigate to="/estimation" replace />;
   }
 
-  const [borneBasse, borneHaute] = estimation.margeConfiance;
+  const { min: borneBasse, max: borneHaute } = estimation.margeConfiance;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
@@ -19,12 +19,12 @@ export function EstimationResult() {
         <h1 className="text-2xl font-bold text-primary-700">Résultat de l'estimation</h1>
         <span
           className={`rounded-full px-3 py-1 text-xs font-medium ${
-            estimation.sourceResultat === "CACHE"
+            estimation.source === "CACHE"
               ? "bg-blue-100 text-blue-700"
               : "bg-green-100 text-green-700"
           }`}
         >
-          {estimation.sourceResultat === "CACHE" ? "Résultat instantané" : "Nouvelle estimation"}
+          {estimation.source === "CACHE" ? "Résultat instantané" : "Nouvelle estimation"}
         </span>
       </div>
 
@@ -41,7 +41,7 @@ export function EstimationResult() {
 
       <div className="mt-6 rounded-lg border bg-white p-6">
         <h2 className="mb-3 font-semibold">Facteurs qui expliquent ce prix</h2>
-        <FactorsChart facteurs={estimation.facteurs} />
+        <FactorsChart facteurs={estimation.facteursExplicatifs} />
       </div>
 
       <div className="mt-6 flex justify-center gap-3">

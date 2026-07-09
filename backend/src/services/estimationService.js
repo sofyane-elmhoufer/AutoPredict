@@ -143,4 +143,10 @@ function formatResultat(estimation, source) {
   };
 }
 
-module.exports = { obtenirEstimation, validerAnneeVehicule, MLIndisponibleError, AnneeInvalideError };
+module.exports = {
+  obtenirEstimation,
+  validerAnneeVehicule,
+  formatResultat,
+  MLIndisponibleError,
+  AnneeInvalideError,
+};
