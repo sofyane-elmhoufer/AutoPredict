@@ -1,14 +1,14 @@
 import { api } from "./api";
 
-// --- Liaison backend réelle (routes réservées au rôle ADMINISTRATEUR) ---
+// Routes du backend utilisées (réservées aux administrateurs) :
 // GET   /admin/dashboard            -> { utilisateurs:{total}, estimations:{total,...},
-//                                          cache:{tauxReutilisationPourcent,...},
-//                                          modeleActif, serviceML:{up} }
+//                                       cache:{tauxReutilisationPourcent,...},
+//                                       modeleActif, serviceML:{up} }
 // GET   /admin/utilisateurs         -> { utilisateurs: Utilisateur[], total, page, totalPages }
 // PATCH /admin/utilisateurs/:id     body: { role?, statutCompte? } -> { utilisateur }
 // GET   /modeles                    -> { modeles: ModeleML[] }   (pas sous /admin)
-// POST  /modeles/:id/activer        -> { modele }                (verbe "activer", pas "deployer")
-// GET   /admin/cache/supervision    -> { repartitionParModele, parJour } (détail, pas un simple taux)
+// POST  /modeles/:id/activer        -> { modele }
+// GET   /admin/cache/supervision    -> { repartitionParModele, parJour }
 
 export async function getStatsAdmin() {
   const { data } = await api.get("/admin/dashboard");
@@ -35,8 +35,7 @@ export async function deployerModele(idModele) {
   return data.modele;
 }
 
-// Le backend n'expose pas de "taux" isolé : on réutilise le pourcentage déjà
-// calculé par le dashboard, ce qui évite un aller-retour réseau superflu.
+// Il n'y a pas de route pour le taux seul : on reprend le pourcentage du dashboard.
 export async function getTauxReutilisationCache() {
   const stats = await getStatsAdmin();
   return stats.cache?.tauxReutilisationPourcent ?? 0;

@@ -1,10 +1,8 @@
 /**
- * Convertit récursivement les clés snake_case (convention base de données)
- * en camelCase (convention attendue par le frontend), pour toute la donnée
- * renvoyée par l'API.
- *
- * Accepte : instances Sequelize (via toJSON), objets bruts, tableaux,
- * valeurs primitives, Date. Ne modifie jamais l'objet d'origine.
+ * Convertit les clés snake_case de la base (id_utilisateur...) en camelCase
+ * (idUtilisateur...), qui est le format utilisé par le frontend.
+ * Marche sur les instances Sequelize, les objets, les tableaux et les dates,
+ * et ne modifie pas l'objet d'origine.
  */
 function snakeToCamelKey(key) {
   return key.replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase());
@@ -13,7 +11,7 @@ function snakeToCamelKey(key) {
 function toCamelCase(input) {
   if (input === null || input === undefined) return input;
 
-  // Instances Sequelize -> représentation JSON brute d'abord
+  // Pour une instance Sequelize, on passe d'abord par toJSON()
   if (typeof input.toJSON === 'function') {
     input = input.toJSON();
   }

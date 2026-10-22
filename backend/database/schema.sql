@@ -73,7 +73,8 @@ CREATE TABLE IF NOT EXISTS estimation (
   etat_vehicule          ENUM('EXCELLENT','BON','MOYEN','A_REPARER') NOT NULL,
   puissance_fiscale      INT NOT NULL,
   ville                  VARCHAR(80) NOT NULL,
-  nombre_proprietaires   INT NOT NULL DEFAULT 1,
+  premiere_main          BOOLEAN NOT NULL DEFAULT TRUE,
+  nb_reutilisations      INT NOT NULL DEFAULT 0,
 
   hash_caracteristiques  CHAR(64) NOT NULL COMMENT 'SHA-256 des caractéristiques normalisées',
   source_resultat        ENUM('CACHE','NOUVELLE_PREDICTION') NOT NULL,

@@ -16,30 +16,35 @@ import { AdminCache } from "./pages/admin/AdminCache";
 
 export function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex min-h-screen flex-col bg-paper">
       <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/estimation" element={<EstimationForm />} />
-        <Route path="/estimation/resultat" element={<EstimationResult />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+      <main className="flex-1">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/estimation" element={<EstimationForm />} />
+          <Route path="/estimation/resultat" element={<EstimationResult />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        {/* Réservé aux utilisateurs connectés */}
-        <Route element={<PrivateRoute />}>
-          <Route path="/compte" element={<Account />} />
-        </Route>
-
-        {/* Réservé au rôle ADMINISTRATEUR */}
-        <Route element={<AdminRoute />}>
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="utilisateurs" element={<AdminUsers />} />
-            <Route path="modeles" element={<AdminModels />} />
-            <Route path="cache" element={<AdminCache />} />
+          {/* Réservé aux utilisateurs connectés */}
+          <Route element={<PrivateRoute />}>
+            <Route path="/compte" element={<Account />} />
           </Route>
-        </Route>
-      </Routes>
+
+          {/* Réservé au rôle ADMINISTRATEUR */}
+          <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="utilisateurs" element={<AdminUsers />} />
+              <Route path="modeles" element={<AdminModels />} />
+              <Route path="cache" element={<AdminCache />} />
+            </Route>
+          </Route>
+        </Routes>
+      </main>
+      <footer className="border-t border-asphalt-200 py-6 text-center text-xs text-asphalt-400">
+        AutoPredict — estimation basée sur des annonces réelles du marché marocain de l'occasion.
+      </footer>
     </div>
   );
 }

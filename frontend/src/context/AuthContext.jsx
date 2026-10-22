@@ -10,7 +10,7 @@ export function AuthProvider({ children }) {
   const [utilisateur, setUtilisateur] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Restaure la session depuis le stockage local au chargement de l'app.
+  // Au chargement de l'app, on récupère la session sauvegardée dans le navigateur.
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
@@ -25,7 +25,7 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  // Si le backend renvoie 401 (token expiré/invalide), on déconnecte proprement.
+  // Si le backend répond 401 (token expiré ou invalide), on déconnecte l'utilisateur.
   useEffect(() => {
     registerUnauthorizedHandler(() => {
       setAuthToken(null);

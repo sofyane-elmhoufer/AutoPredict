@@ -1,6 +1,7 @@
 pandas
 numpy
-scikit-learn
+# même version que celle qui a servi à entraîner models/model_prix.joblib
+scikit-learn==1.8.0
 xgboost
 joblib
 flask

@@ -1,99 +1,72 @@
-# AutoPredict — Frontend (React / JavaScript)
+# AutoPredict : frontend
 
-Frontend React (JavaScript, sans TypeScript) pour la plateforme AutoPredict
-(estimation de prix de véhicules d'occasion). Ce projet ne fait jamais appel
-directement au modèle ML : tout passe par l'API REST du backend.
+Interface web de AutoPredict, en React (JavaScript). Elle ne parle jamais au modèle ML :
+toutes les requêtes passent par l'API du backend (`backend/`).
 
-## Stack
+## Technologies
 
-- **Vite + React** (JavaScript / JSX)
-- **react-router-dom** — routage, y compris routes protégées par rôle
-- **@tanstack/react-query** — appels API, cache réseau, gestion loading/erreur
-- **react-hook-form + zod** — formulaire de saisie véhicule et validation
-- **axios** — client HTTP central (`src/services/api.js`)
-- **recharts** — graphiques (facteurs SHAP, taux de cache)
-- **Tailwind CSS** — styles
+- Vite + React (JSX)
+- react-router-dom : pages et routes protégées (connecté / administrateur)
+- @tanstack/react-query : appels à l'API, chargement et erreurs
+- react-hook-form + zod : formulaire d'estimation et validation
+- axios : client HTTP unique (`src/services/api.js`)
+- recharts : graphique des variables importantes du modèle
+- Tailwind CSS : styles
 
-## Démarrage
+## Lancer
 
 ```bash
 npm install
-cp .env.example .env   # puis adapter VITE_API_BASE_URL vers l'URL du backend
-npm run dev
+cp .env.example .env     # VITE_API_BASE_URL = adresse de l'API (http://localhost:5000/api par défaut)
+npm run dev              # http://localhost:5173
+npm run build            # version de production dans dist/
 ```
 
-## Arborescence
+Le backend doit tourner pour que les pages fonctionnent (voir le README à la racine du projet).
+
+## Structure
 
 ```
 src/
-  types/index.js          # Constantes (enums) + JSDoc décrivant la forme des objets échangés
+  main.jsx                   point d'entrée (Router, react-query, AuthContext)
+  App.jsx                    liste des routes
+  types/index.js             listes du formulaire (carburants, boîtes, états) + JSDoc des objets de l'API
   services/
-    api.js                # Client axios central + gestion du token JWT
-    authService.js        # login / register
-    estimationService.js  # soumission formulaire, historique, export
-    catalogueService.js   # marques/modèles, bornes anneeMin/anneeMax
-    adminService.js       # stats, utilisateurs, modèles ML, taux de cache
-  context/
-    AuthContext.jsx        # session utilisateur, rôle, token
+    api.js                   client axios + ajout du token JWT
+    authService.js           connexion, inscription
+    estimationService.js     estimation, historique, comparaison, export
+    catalogueService.js      domaine du modèle, marques, modèles
+    adminService.js          dashboard, utilisateurs, versions du modèle, cache
+  context/AuthContext.jsx    session de l'utilisateur (token, rôle)
   components/
     Navbar.jsx
-    PrivateRoute.jsx        # protège les routes "utilisateur connecté"
-    AdminRoute.jsx           # protège les routes "administrateur"
-    FactorsChart.jsx         # graphique des facteurs explicatifs (SHAP)
+    PrivateRoute.jsx         réservé aux utilisateurs connectés
+    AdminRoute.jsx           réservé aux administrateurs
+    FactorsChart.jsx         graphique des variables qui pèsent le plus dans le modèle
+    ui/                      CacheBadge, ChoixOuiNon, PricePlate, StepIndicator, VilleCombobox
   pages/
     Home.jsx
-    EstimationForm.jsx       # formulaire dynamique (cœur du projet)
-    EstimationResult.jsx     # affichage prix / fourchette / facteurs
-    Login.jsx / Register.jsx
-    Account.jsx              # historique, comparaison, export
-    admin/
-      AdminLayout.jsx
-      AdminDashboard.jsx      # stats d'usage
-      AdminUsers.jsx          # gestion des comptes
-      AdminModels.jsx         # versions du modèle ML, déploiement
-      AdminCache.jsx          # taux de réutilisation du cache
-  App.jsx                    # déclaration des routes
-  main.jsx                   # point d'entrée, providers (Router, QueryClient, Auth)
+    EstimationForm.jsx       formulaire en plusieurs étapes
+    EstimationResult.jsx     prix, fourchette, caractéristiques, origine (cache ou nouveau calcul)
+    Login.jsx, Register.jsx
+    Account.jsx              historique, comparaison, export, suppression
+    admin/                   AdminLayout, AdminDashboard, AdminUsers, AdminModels, AdminCache
 ```
 
-## Contrat d'API à valider avec le backend
+## Routes de l'application
 
-Chaque fichier de `src/services/` documente en commentaire les endpoints REST
-attendus. Récapitulatif à confirmer avec l'équipe backend avant intégration :
-
-| Endpoint | Méthode | Usage frontend |
+| URL | Page | Accès |
 |---|---|---|
-| `/auth/login`, `/auth/register` | POST | Connexion / inscription |
-| `/catalogue/marques` | GET | Liste déroulante marques |
-| `/catalogue/modeles?marque=` | GET | Liste déroulante modèles (cascade) |
-| `/catalogue/reference?marque=&modele=` | GET | Bornes `anneeMin`/`anneeMax` pour validation |
-| `/estimations` | POST | Soumission du formulaire → prix, fourchette, facteurs, source |
-| `/utilisateurs/:id/estimations` | GET | Historique utilisateur |
-| `/estimations/:id/export?format=` | GET | Export PDF/tableur |
-| `/admin/stats` | GET | Dashboard admin |
-| `/admin/utilisateurs`, `PUT /admin/utilisateurs/:id` | GET/PUT | Gestion des comptes |
-| `/admin/modeles`, `POST /admin/modeles/:id/deployer` | GET/POST | Versions du modèle ML |
-| `/admin/cache/taux-reutilisation` | GET | Supervision du cache |
+| `/` | accueil | tous |
+| `/estimation`, `/estimation/resultat` | formulaire et résultat | tous |
+| `/login`, `/register` | connexion, inscription | tous |
+| `/compte` | historique de l'utilisateur | connecté |
+| `/admin`, `/admin/utilisateurs`, `/admin/modeles`, `/admin/cache` | back-office | administrateur |
 
-**Points à verrouiller ensemble avant de coder en parallèle :**
+## Points à connaître
 
-1. Format exact des réponses JSON (noms de champs) — idéalement une petite
-   spec OpenAPI/Swagger partagée.
-2. Emplacement du token JWT dans les requêtes (`Authorization: Bearer ...`)
-   et sa durée de vie.
-3. Codes d'erreur HTTP à gérer côté front (400 validation, 401/403 auth/rôle,
-   503 si le modèle ML est indisponible sans résultat en cache).
-4. CORS activé côté backend pour l'origine du frontend (dev et prod).
-5. Format des facteurs SHAP renvoyés par l'équipe ML (`{ feature, importance }`
-   attendu ici) et liste exacte des valeurs catégorielles (carburant, boîte de
-   vitesses, état) utilisées à l'entraînement du modèle — à faire correspondre
-   aux constantes de `src/types/index.js`.
-
-## Travailler sans attendre le backend
-
-Tant que l'API n'est pas prête, deux options :
-
-- **json-server** : créer un `db.json` avec des données d'exemple et pointer
-  `VITE_API_BASE_URL` dessus.
-- **MSW (Mock Service Worker)** : intercepter les appels `axios` dans le
-  navigateur avec des réponses mockées, sans changer le code applicatif.
+- Les listes de marques et de modèles viennent du catalogue de la base, et les villes du service ML.
+  Le formulaire ne propose donc que ce que le modèle connaît.
+- Le graphique du résultat montre le poids moyen de chaque variable dans le modèle. Ce n'est pas
+  une explication spécifique à la voiture estimée.
+- Le token JWT est gardé dans le navigateur (voir `AuthContext.jsx`). Une réponse 401 déconnecte l'utilisateur.

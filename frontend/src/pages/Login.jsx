@@ -25,41 +25,43 @@ export function Login() {
   }
 
   return (
-    <div className="mx-auto max-w-sm px-4 py-16">
-      <h1 className="mb-6 text-2xl font-bold text-primary-700">Connexion</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="mt-1 w-full rounded border px-3 py-2"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium">Mot de passe</label>
-          <input
-            type="password"
-            value={motDePasse}
-            onChange={(e) => setMotDePasse(e.target.value)}
-            required
-            className="mt-1 w-full rounded border px-3 py-2"
-          />
-        </div>
-        {erreur && <p className="text-sm text-red-600">{erreur}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded bg-primary-500 px-4 py-2 text-white hover:bg-primary-600 disabled:opacity-50"
-        >
-          {loading ? "Connexion..." : "Se connecter"}
-        </button>
-      </form>
-      <p className="mt-4 text-sm text-gray-500">
-        Pas encore de compte ? <Link to="/register" className="text-primary-600">S'inscrire</Link>
-      </p>
+    <div className="mx-auto max-w-sm px-4 py-16 sm:py-24">
+      <div className="card p-8">
+        <p className="mb-1 text-sm font-medium uppercase tracking-widest text-taxi-500">Bienvenue</p>
+        <h1 className="mb-6 font-display text-2xl font-bold text-ink-800">Connexion</h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-ink-700">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="input"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-ink-700">Mot de passe</label>
+            <input
+              type="password"
+              value={motDePasse}
+              onChange={(e) => setMotDePasse(e.target.value)}
+              required
+              className="input"
+            />
+          </div>
+          {erreur && <p className="text-sm text-taxi-500">{erreur}</p>}
+          <button type="submit" disabled={loading} className="btn-primary w-full !py-2.5">
+            {loading ? "Connexion..." : "Se connecter"}
+          </button>
+        </form>
+        <p className="mt-5 text-sm text-asphalt-500">
+          Pas encore de compte ?{" "}
+          <Link to="/register" className="font-medium text-taxi-500 hover:text-taxi-600">
+            S'inscrire
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

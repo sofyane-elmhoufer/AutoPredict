@@ -5,8 +5,8 @@ const { requireAuth, optionalAuth } = require('../middlewares/auth.middleware');
 const { handleValidationErrors } = require('../middlewares/error.middleware');
 const { estimationRules } = require('../validators/estimation.validator');
 
-// Accessible au Visiteur (optionalAuth) et à l'Utilisateur connecté :
-// si connecté, l'estimation est automatiquement rattachée à son historique.
+// Un visiteur peut estimer un prix (optionalAuth). S'il est connecté, l'estimation
+// est ajoutée à son historique.
 router.post(
   '/',
   optionalAuth,
@@ -15,7 +15,7 @@ router.post(
   estimationController.creerEstimation
 );
 
-// Le reste nécessite un compte (le Visiteur n'a pas d'historique, cf. CDC)
+// Le reste demande un compte (un visiteur n'a pas d'historique)
 router.get('/', requireAuth, estimationController.getHistorique);
 router.post('/comparer', requireAuth, estimationController.comparerEstimations);
 router.get('/:id', requireAuth, estimationController.getEstimationById);

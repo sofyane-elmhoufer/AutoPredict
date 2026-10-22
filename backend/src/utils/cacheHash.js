@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const KM_STEP = parseInt(process.env.KM_ROUNDING_STEP || '5000', 10);
 
 /**
- * Normalise une chaîne de caractères : trim, minuscule, sans accents/espaces multiples.
+ * Normalise un texte : espaces en trop, minuscules et accents enlevés.
  */
 function normalizeString(str) {
   if (str === undefined || str === null) return '';
@@ -12,23 +12,23 @@ function normalizeString(str) {
     .trim()
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // supprime les accents
+    .replace(/[\u0300-\u036f]/g, '') // enlève les accents
     .replace(/\s+/g, ' ');
 }
 
 /**
- * Arrondit le kilométrage par tranche fixe (ex. pas de 5000 km),
- * pour que deux kilométrages très proches soient reconnus comme la même demande.
+ * Arrondit le kilométrage par tranche (pas de 5000 km) : deux kilométrages
+ * très proches comptent alors comme la même demande.
  */
 function roundMileage(km, step = KM_STEP) {
   return Math.round(Number(km) / step) * step;
 }
 
 /**
- * Étape 1 du cahier des charges : normalisation des caractéristiques saisies
- * puis calcul d'une empreinte unique (SHA-256) représentant la combinaison.
+ * Normalise les caractéristiques saisies puis calcule leur empreinte SHA-256.
+ * C'est cette empreinte qui sert de clé pour le cache.
  *
- * @param {Object} caracteristiques - données brutes du formulaire véhicule
+ * @param {Object} caracteristiques - données du formulaire
  * @returns {{ normalized: Object, hash: string }}
  */
 function computeCacheHash(caracteristiques) {
@@ -42,10 +42,10 @@ function computeCacheHash(caracteristiques) {
     puissanceFiscale: Number(caracteristiques.puissanceFiscale),
     etatVehicule: normalizeString(caracteristiques.etatVehicule),
     ville: normalizeString(caracteristiques.ville),
-    nombreProprietaires: Number(caracteristiques.nombreProprietaires || 1),
+    premiereMain: Boolean(caracteristiques.premiereMain),
   };
 
-  // Sérialisation déterministe (clés triées) pour garantir un hash stable
+  // On trie les clés pour que le même véhicule donne toujours le même hash
   const serialized = JSON.stringify(normalized, Object.keys(normalized).sort());
   const hash = crypto.createHash('sha256').update(serialized).digest('hex');
 

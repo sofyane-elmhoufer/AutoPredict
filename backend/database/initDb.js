@@ -1,5 +1,5 @@
 /**
- * Crée/synchronise les tables à partir des modèles Sequelize.
+ * Crée les tables de la base à partir des modèles Sequelize.
  * Usage : npm run db:init
  */
 require('dotenv').config();

@@ -1,175 +1,144 @@
-# AutoPredict — Backend (API REST)
+# AutoPredict : backend
 
-API REST du projet **AutoPredict**, réalisée en **Node.js / Express / Sequelize / MySQL**.
-Implémente le formulaire d'estimation, le **mécanisme de cache** (section 3.1.b du cahier
-des charges), l'authentification JWT, et le back-office administrateur.
+API REST de AutoPredict, en **Node.js / Express / Sequelize / MySQL**.
+Elle gère le formulaire d'estimation avec son **cache**, les comptes (JWT) et le
+back-office administrateur. Le calcul du prix est fait par le service ML Python (dossier `ml/`).
 
 ## 1. Installation
 
 ```bash
 cd backend
 npm install
-cp .env.example .env   # puis renseigner DB_PASSWORD, JWT_SECRET, ML_SERVICE_URL...
-```
-
-Créer la base MySQL (ou laisser Sequelize la synchroniser automatiquement en dev) :
-
-```bash
+cp .env.example .env     # puis renseigner DB_PASSWORD, JWT_SECRET (et ML_SERVICE_URL si besoin)
 mysql -u root -p -e "CREATE DATABASE autopredict CHARACTER SET utf8mb4;"
 ```
 
-## 2. Lancer le serveur
+## 2. Données de départ et lancement
 
 ```bash
-npm run dev        # avec nodemon, rechargement automatique
-# ou
-npm start
+npm run db:seed          # crée les tables et les données de départ
+npm run dev              # nodemon (rechargement automatique), ou npm start
 ```
 
-En développement, `server.js` appelle `sequelize.sync({ alter: true })` : les tables
-sont créées/mises à jour automatiquement à partir des modèles (`src/models/`).
-En production, préférez le script `database/schema.sql` + des migrations dédiées.
+Le seed crée :
 
-## 3. Données de démonstration
+- `admin@autopredict.ma` / `Admin123!` (administrateur)
+- `user@autopredict.ma` / `User1234!` (utilisateur)
+- le catalogue des véhicules : les 224 couples marque / modèle présents dans les données
+  d'entraînement (lus dans `ml/models/catalogue_vehicules.json`)
+- la version active du modèle ML, avec ses vrais scores (lus dans `ml/models/metrics.json`)
 
-```bash
-npm run db:seed
-```
+On peut relancer `npm run db:seed` sans risque : ce qui existe déjà n'est pas dupliqué.
 
-Crée :
-- `admin@autopredict.ma` / `Admin123!` (rôle ADMINISTRATEUR)
-- `user@autopredict.ma` / `User1234!` (rôle UTILISATEUR)
-- Quelques références du catalogue véhicule (Dacia, Renault, Peugeot...)
-- Une version `v0.1-mock` du modèle ML, activée par défaut (à remplacer par le vrai
-  modèle entraîné par l'équipe Data Science via `POST /api/modeles` puis `/activer`)
+Pour que le seed trouve le catalogue et les scores, le dossier `ml/models/` doit être
+à côté du dossier `backend/`. S'il n'existe pas, un petit catalogue de secours est utilisé.
 
-## 4. Architecture
+En développement, `server.js` appelle `sequelize.sync({ alter: true })` et met les tables
+à jour tout seul. En production il vaut mieux utiliser `database/schema.sql`.
+
+## 3. Structure
 
 ```
 backend/
-├── server.js                  # point d'entrée
+├── server.js                    point d'entrée
 ├── src/
-│   ├── app.js                 # configuration Express (middlewares, routes)
-│   ├── config/database.js     # connexion Sequelize/MySQL
-│   ├── models/                # Utilisateur, Estimation, ModeleML, CatalogueVehicule
-│   ├── controllers/           # logique des routes
+│   ├── app.js                   configuration Express (sécurité, routes)
+│   ├── config/database.js       connexion Sequelize / MySQL
+│   ├── models/                  Utilisateur, Estimation, ModeleML, CatalogueVehicule
+│   ├── controllers/             logique de chaque route
 │   ├── services/
-│   │   ├── estimationService.js  # ⭐ mécanisme de cache (cœur du projet)
-│   │   └── mlService.js          # appel HTTP au microservice Python
-│   ├── middlewares/           # auth JWT, rôles, gestion d'erreurs
-│   ├── validators/            # règles express-validator
-│   ├── utils/
-│   │   ├── cacheHash.js       # normalisation + SHA-256
-│   │   └── jwt.js
+│   │   ├── estimationService.js  le cache (cœur du projet)
+│   │   └── mlService.js          appels HTTP au service Python
+│   ├── middlewares/             authentification JWT, rôles, erreurs
+│   ├── validators/              règles express-validator
+│   ├── utils/                   cacheHash (normalisation + SHA-256), jwt, caseConverter
 │   └── routes/
 └── database/
-    ├── schema.sql              # schéma SQL de référence (doc / prod)
-    ├── initDb.js                # sync Sequelize -> tables
-    └── seed.js                  # données de démo
+    ├── schema.sql               schéma SQL de référence
+    ├── initDb.js                crée les tables
+    └── seed.js                  données de départ
 ```
 
-## 5. Le mécanisme de cache, en bref
+## 4. Le cache
 
-`POST /api/estimations` déclenche `estimationService.obtenirEstimation()` :
+`POST /api/estimations` appelle `estimationService.obtenirEstimation()` :
 
-1. **Normalisation** des caractéristiques (texte en minuscule sans accents, kilométrage
-   arrondi par tranche de 5000 km — configurable via `KM_ROUNDING_STEP`).
-2. **Hash SHA-256** de la combinaison normalisée (`cacheHash.js`).
-3. **Recherche en base** (`ESTIMATION` indexée sur `hash_caracteristiques + id_modele`)
-   filtrée sur le **modèle ML actuellement actif**.
-4. Trouvé → retour immédiat, `source: "CACHE"`, **aucun appel au modèle ML**.
-5. Non trouvé (ou modèle réentraîné depuis) → appel `mlService.predire()`, sauvegarde,
+1. Les caractéristiques sont normalisées (texte en minuscules sans accents, kilométrage
+   arrondi par tranche de 5000 km, réglable avec `KM_ROUNDING_STEP`).
+2. On calcule un hash SHA-256 de cette combinaison (`utils/cacheHash.js`).
+3. On cherche en base une estimation avec ce hash, faite par le **modèle ML actif**.
+4. Trouvée : on renvoie son résultat avec `source: "CACHE"`, sans appeler le modèle.
+   Une ligne est quand même ajoutée dans la table `estimation` pour cette demande (elle apparaît
+   dans l'historique de l'utilisateur et dans les stats), et le compteur `nb_reutilisations`
+   de l'estimation d'origine augmente.
+5. Pas trouvée : on appelle le service ML, on enregistre le résultat et on renvoie
    `source: "NOUVELLE_PREDICTION"`.
 
-Quand l'admin active une nouvelle version de modèle (`POST /api/modeles/:id/activer`),
-les anciennes estimations en cache deviennent automatiquement obsolètes, car la
-recherche filtre sur `id_modele`.
+Quand l'admin active une autre version du modèle (`POST /api/modeles/:id/activer`),
+le cache est invalidé de lui-même, puisque la recherche se fait sur l'identifiant du modèle actif.
 
-## 6. Intégration avec le microservice ML (Python)
+## 5. Service ML
 
-Le backend attend un microservice HTTP exposé par l'équipe Data Science (dossier `ml/`),
-configuré via `ML_SERVICE_URL` dans `.env` :
+Le backend appelle le service Flask de `ml/src/api.py` (adresse dans `ML_SERVICE_URL`,
+`http://localhost:8000` par défaut).
 
-**`POST {ML_SERVICE_URL}/predict`**
+`POST /predict` reçoit les noms de colonnes du dataset, dans leur forme d'entraînement.
+`src/services/mlService.js` fait la traduction depuis les valeurs du formulaire :
+
 ```json
-// Requête
 {
-  "marque": "Dacia", "modele": "Duster", "annee": 2019,
-  "kilometrage": 85000, "carburant": "DIESEL", "boiteVitesses": "MANUELLE",
-  "puissanceFiscale": 7, "etatVehicule": "BON", "ville": "Fès",
-  "nombreProprietaires": 1
-}
-// Réponse attendue
-{
-  "prixEstime": 145000,
-  "margeConfiance": { "min": 138000, "max": 152000 },
-  "facteursExplicatifs": [
-    { "feature": "kilometrage", "impact": -0.18 },
-    { "feature": "annee", "impact": 0.25 }
-  ]
+  "marque": "Dacia", "modele": "Duster", "annee": 2018, "kilometrage": 90000,
+  "carburant": "Diesel", "boite_vitesses": "Manuelle", "puissance_fiscale": 6,
+  "etat": "Bon", "ville": "Casablanca", "premiere_main": "Oui"
 }
 ```
 
-**`GET {ML_SERVICE_URL}/health`** → utilisé par le dashboard admin.
+Réponse :
 
-## 7. Principaux endpoints
+```json
+{
+  "prixEstime": 148486,
+  "margeConfiance": { "min": 135691, "max": 161281 },
+  "facteursExplicatifs": [{ "feature": "annee", "impact": 0.4076 }]
+}
+```
 
-| Méthode | Route | Accès | Description |
+`GET /health` et `GET /domaine` (villes connues, bornes numériques) sont aussi utilisés.
+
+Correspondance des valeurs du formulaire avec le dataset :
+
+| Formulaire | Envoyé au modèle |
+|---|---|
+| carburant ESSENCE / DIESEL / HYBRIDE / ELECTRIQUE | Essence / Diesel / Hybride / Electrique |
+| carburant GPL | Essence (le GPL n'existe pas dans les données) |
+| boîte MANUELLE / AUTOMATIQUE | Manuelle / Automatique |
+| état EXCELLENT / BON / MOYEN / A_REPARER | Excellent / Bon / Correct / Endommagé |
+| première main (booléen) | Oui / Non |
+
+## 6. Routes
+
+| Méthode | Route | Accès | Rôle |
 |---|---|---|---|
-| POST | `/api/auth/register` | public | Créer un compte |
-| POST | `/api/auth/login` | public | Connexion, retourne un JWT |
-| GET | `/api/auth/me` | connecté | Profil courant |
-| PUT | `/api/auth/me` | connecté | Modifier le profil |
-| DELETE | `/api/auth/me` | connecté | Supprimer/anonymiser le compte |
-| POST | `/api/estimations` | public/optionnel | **Soumettre le formulaire (cache)** |
-| GET | `/api/estimations` | connecté | Historique paginé |
-| GET | `/api/estimations/:id` | connecté | Détail d'une estimation |
-| DELETE | `/api/estimations/:id` | connecté | Supprimer une estimation |
-| POST | `/api/estimations/comparer` | connecté | Comparer plusieurs estimations |
-| GET | `/api/estimations/:id/export?format=pdf\|csv` | connecté | Export |
-| GET | `/api/catalogue/marques` | public | Liste des marques |
-| GET | `/api/catalogue/modeles?marque=...` | public | Modèles d'une marque |
-| POST/PUT/DELETE | `/api/catalogue/:id` | admin | Gestion du catalogue |
-| GET | `/api/modeles` | admin | Versions du modèle ML |
-| POST | `/api/modeles` | admin | Enregistrer une nouvelle version |
-| POST | `/api/modeles/:id/activer` | admin | Activer une version |
-| GET | `/api/admin/dashboard` | admin | Statistiques globales |
-| GET | `/api/admin/cache/supervision` | admin | Taux de réutilisation du cache |
-| GET | `/api/admin/utilisateurs` | admin | Liste des comptes |
-| PATCH | `/api/admin/utilisateurs/:id` | admin | Activer/désactiver/changer un rôle |
+| POST | `/api/auth/register` | public | créer un compte |
+| POST | `/api/auth/login` | public | connexion, renvoie un JWT |
+| GET / PUT / DELETE | `/api/auth/me` | connecté | voir, modifier, supprimer (anonymiser) son compte |
+| POST | `/api/estimations` | public | faire une estimation (rattachée au compte si connecté) |
+| GET | `/api/estimations` | connecté | historique avec pagination |
+| GET / DELETE | `/api/estimations/:id` | connecté | détail, suppression |
+| POST | `/api/estimations/comparer` | connecté | comparer plusieurs estimations (`{ ids: [...] }`) |
+| GET | `/api/estimations/:id/export?format=pdf\|csv` | connecté | export |
+| GET | `/api/catalogue/domaine` | public | villes et bornes connues du modèle |
+| GET | `/api/catalogue/marques` | public | liste des marques |
+| GET | `/api/catalogue/modeles?marque=...` | public | modèles d'une marque |
+| GET | `/api/catalogue` | public | catalogue complet avec pagination |
+| POST / PUT / DELETE | `/api/catalogue[/:id]` | admin | gérer les références |
+| GET | `/api/modeles` | admin | versions du modèle ML |
+| POST | `/api/modeles` | admin | enregistrer une version |
+| POST | `/api/modeles/:id/activer` | admin | activer une version (invalide le cache) |
+| GET | `/api/admin/dashboard` | admin | statistiques |
+| GET | `/api/admin/cache/supervision` | admin | estimations par modèle et par jour |
+| GET | `/api/admin/utilisateurs` | admin | liste des utilisateurs |
+| PATCH | `/api/admin/utilisateurs/:id` | admin | activer/désactiver un compte, changer le rôle |
+| GET | `/api/health` | public | le serveur répond |
 
-Toutes les routes protégées attendent l'en-tête :
-`Authorization: Bearer <token>`
-
-## 8. Exemple d'appel (formulaire d'estimation)
-
-```bash
-curl -X POST http://localhost:5000/api/estimations \
-  -H "Content-Type: application/json" \
-  -d '{
-    "marque": "Dacia", "modele": "Duster", "annee": 2019,
-    "kilometrage": 85000, "carburant": "DIESEL", "boiteVitesses": "MANUELLE",
-    "puissanceFiscale": 7, "etatVehicule": "BON", "ville": "Fès",
-    "nombreProprietaires": 1
-  }'
-```
-
-## 9. Pour le développeur frontend (React)
-
-- Toutes les réponses sont en JSON.
-- CORS est déjà configuré pour `FRONTEND_URL` (par défaut `http://localhost:5173`, à
-  adapter si vous utilisez Vite/CRA sur un autre port).
-- Stocker le `token` reçu à l'inscription/connexion et l'envoyer dans
-  `Authorization: Bearer <token>` pour les routes protégées.
-- Le champ `source` (`"CACHE"` ou `"NOUVELLE_PREDICTION"`) dans la réponse
-  d'estimation permet d'afficher la mention « résultat instantané » vs « nouvelle
-  estimation » demandée dans le cahier des charges.
-
-## 10. Pour le développeur Data Science / ML (Python)
-
-Votre microservice doit exposer `POST /predict` et `GET /health` (voir section 6).
-Une fois votre modèle entraîné et évalué, publiez-le via :
-```bash
-POST /api/modeles         # avec nomVersion, algorithme, cheminFichier, scoreR2, scoreMAE
-POST /api/modeles/:id/activer
-```
+Les requêtes sont limitées à 300 par IP toutes les 15 minutes.

@@ -8,21 +8,20 @@ const mlClient = axios.create({
     : {},
 });
 
-// --- Traduction du modèle métier (formulaire web) vers le contrat attendu ---
-// par le pipeline scikit-learn entraîné (cf. ml/src/train.py + preprocessing.py).
-// Le dataset d'entraînement (Avito) utilise des libellés français avec une
-// casse spécifique ; les enums du formulaire web sont volontairement différents
-// (en majuscules, en français normalisé) pour rester indépendants du choix
-// technique de l'équipe Data. C'est ce mapping qui fait le pont entre les deux.
+// Traduction des valeurs du formulaire vers celles du dataset d'entraînement
+// (voir ml/src/preprocessing.py). Dans le formulaire les valeurs sont en
+// majuscules (DIESEL, MANUELLE...), alors que le dataset Avito utilise des
+// libellés comme "Diesel" ou "Manuelle". Ces tables font le lien entre les deux.
 const CARBURANT_VERS_ML = {
   ESSENCE: 'Essence',
   DIESEL: 'Diesel',
   HYBRIDE: 'Hybride',
   ELECTRIQUE: 'Electrique',
-  // GPL n'existe pas dans le jeu d'entraînement : on le traite comme la
-  // catégorie "Inconnu" déjà vue à l'entraînement (imputation), plutôt que
-  // de laisser passer une valeur totalement inconnue de l'encodeur.
-  GPL: 'Inconnu',
+  // Le GPL n'existe pas dans les données d'entraînement (et "Inconnu" non plus
+  // pour le carburant). Un moteur GPL est un moteur essence converti, donc on
+  // l'envoie comme "Essence". Sinon le modèle ne reconnaît pas la valeur et
+  // baisse le prix d'environ 20 %.
+  GPL: 'Essence',
 };
 
 const BOITE_VERS_ML = {
@@ -38,14 +37,9 @@ const ETAT_VERS_ML = {
 };
 
 /**
- * Le dataset d'entraînement ne connaît pas le "nombre de propriétaires" mais
- * un booléen "première main" (Oui/Non). On approxime : un véhicule avec un
- * seul propriétaire correspond à "première main".
+ * Transforme les caractéristiques du formulaire en payload pour le service ML.
+ * La "première main" est envoyée directement en Oui / Non.
  */
-function versPremiereMain(nombreProprietaires) {
-  return Number(nombreProprietaires) <= 1 ? 'Oui' : 'Non';
-}
-
 function versPayloadML(caracteristiques) {
   return {
     marque: caracteristiques.marque,
@@ -57,15 +51,13 @@ function versPayloadML(caracteristiques) {
     puissance_fiscale: Number(caracteristiques.puissanceFiscale),
     etat: ETAT_VERS_ML[caracteristiques.etatVehicule] || 'Inconnu',
     ville: caracteristiques.ville,
-    premiere_main: versPremiereMain(caracteristiques.nombreProprietaires || 1),
+    premiere_main: caracteristiques.premiereMain ? 'Oui' : 'Non',
   };
 }
 
 /**
- * Appelle le microservice ML (Flask, cf. ml/src/api.py) pour obtenir une
- * prédiction de prix. Correspond à ModeleML.predire() du diagramme de classes.
+ * Appelle le service ML (Flask, ml/src/api.py) pour obtenir le prix.
  *
- * Contrat attendu côté service Python (voir ml/src/api.py) :
  * Requête  : { marque, modele, annee, kilometrage, carburant, boite_vitesses,
  *              puissance_fiscale, etat, ville, premiere_main }
  * Réponse  : {
@@ -80,8 +72,7 @@ async function predire(caracteristiques) {
 }
 
 /**
- * Vérifie que le service ML est disponible (utilisé par le dashboard admin
- * et pour un health-check global de la plateforme).
+ * Vérifie que le service ML répond (utilisé par le tableau de bord admin).
  */
 async function healthCheck() {
   try {
@@ -92,4 +83,20 @@ async function healthCheck() {
   }
 }
 
-module.exports = { predire, healthCheck, versPayloadML };
+// Domaine d'entraînement (villes connues + bornes numériques).
+// On le garde 10 minutes en mémoire : il ne change qu'à chaque nouvel
+// entraînement, pas besoin de rappeler le service ML à chaque ouverture du formulaire.
+const DOMAINE_CACHE_DUREE_MS = 10 * 60 * 1000;
+let domaineCache = { valeur: null, expireA: 0 };
+
+async function getDomaine() {
+  const maintenant = Date.now();
+  if (domaineCache.valeur && domaineCache.expireA > maintenant) {
+    return domaineCache.valeur;
+  }
+  const { data } = await mlClient.get('/domaine', { timeout: 5000 });
+  domaineCache = { valeur: data, expireA: maintenant + DOMAINE_CACHE_DUREE_MS };
+  return data;
+}
+
+module.exports = { predire, healthCheck, versPayloadML, getDomaine };

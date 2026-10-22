@@ -16,17 +16,15 @@ class AnneeInvalideError extends Error {
   }
 }
 
-/**
- * Valide que l'année saisie correspond à la plage de production réelle du modèle,
- * via le référentiel CatalogueVehicule (anneeMin / anneeMax). Cf. section 5.4 du CDC.
- */
+// Vérifie que l'année saisie est dans la plage connue du modèle de voiture
+// (table CatalogueVehicule, colonnes annee_min / annee_max).
 async function validerAnneeVehicule(marque, modele, annee) {
   const ref = await CatalogueVehicule.findOne({
     where: { marque, modele },
   });
 
   if (!ref) {
-    // Pas de référence connue : on n'empêche pas l'estimation mais on log pour l'admin
+    // Modèle absent du catalogue : on laisse passer, l'estimation reste possible
     return { reference: null };
   }
 
@@ -39,59 +37,19 @@ async function validerAnneeVehicule(marque, modele, annee) {
   return { reference: ref };
 }
 
-/**
- * Implémente les étapes 1 à 4 de la section 3.1.b du cahier des charges :
- *  1. Normalisation + calcul du hash
- *  2. Recherche en base (table ESTIMATION) sur hash + modèle actif
- *  3a. Trouvé -> renvoyer depuis le cache (source = CACHE)
- *  3b. Non trouvé / modèle obsolète -> appel ML, sauvegarde (source = NOUVELLE_PREDICTION)
- *  4. Retour du résultat au format uniforme
- *
- * @param {Object} caracteristiques - payload du formulaire véhicule
- * @param {number|null} idUtilisateur - null si Visiteur
- */
-async function obtenirEstimation(caracteristiques, idUtilisateur = null) {
-  // Validation métier : cohérence de l'année vs. catalogue
-  const { reference } = await validerAnneeVehicule(
-    caracteristiques.marque,
-    caracteristiques.modele,
-    Number(caracteristiques.annee)
-  );
-
-  // Modèle ML actuellement actif : seule référence valable pour juger la fraîcheur du cache
-  const modeleActif = await ModeleML.findOne({ where: { statut_actif: true } });
-  if (!modeleActif) {
-    throw new MLIndisponibleError();
-  }
-
-  // Étape 1 : normalisation + hash
-  const { hash } = computeCacheHash(caracteristiques);
-
-  // Étape 2 : recherche en base d'une estimation avec la même empreinte,
-  // générée par la version de modèle actuellement active
-  const estimationExistante = await Estimation.findOne({
-    where: {
-      hash_caracteristiques: hash,
-      id_modele: modeleActif.id_modele,
-    },
-    order: [['date_estimation', 'DESC']],
-  });
-
-  // Étape 3a : cache trouvé et à jour
-  if (estimationExistante) {
-    return formatResultat(estimationExistante, 'CACHE');
-  }
-
-  // Étape 3b : aucune correspondance (ou modèle réentraîné depuis) -> appel au modèle ML
-  let predictionML;
-  try {
-    predictionML = await mlService.predire(caracteristiques);
-  } catch (err) {
-    // Le modèle ML est indisponible et il n'existe aucune estimation en cache utilisable
-    throw new MLIndisponibleError();
-  }
-
-  const nouvelleEstimation = await Estimation.create({
+// Enregistre une ligne dans la table estimation. On s'en sert pour une nouvelle
+// prédiction ET pour une réponse venue du cache : comme ça chaque demande
+// laisse une trace (historique de l'utilisateur, stats de l'admin).
+async function enregistrerEstimation({
+  caracteristiques,
+  idUtilisateur,
+  reference,
+  modeleActif,
+  hash,
+  source,
+  resultat,
+}) {
+  return Estimation.create({
     id_utilisateur: idUtilisateur,
     id_vehicule_ref: reference ? reference.id_vehicule_ref : null,
     id_modele: modeleActif.id_modele,
@@ -104,21 +62,102 @@ async function obtenirEstimation(caracteristiques, idUtilisateur = null) {
     etat_vehicule: caracteristiques.etatVehicule,
     puissance_fiscale: caracteristiques.puissanceFiscale,
     ville: caracteristiques.ville,
-    nombre_proprietaires: caracteristiques.nombreProprietaires || 1,
+    premiere_main: Boolean(caracteristiques.premiereMain),
     hash_caracteristiques: hash,
-    source_resultat: 'NOUVELLE_PREDICTION',
-    prix_estime: predictionML.prixEstime,
-    marge_confiance_min: predictionML.margeConfiance.min,
-    marge_confiance_max: predictionML.margeConfiance.max,
-    facteurs_explicatifs: predictionML.facteursExplicatifs || [],
+    source_resultat: source,
+    prix_estime: resultat.prix_estime,
+    marge_confiance_min: resultat.marge_confiance_min,
+    marge_confiance_max: resultat.marge_confiance_max,
+    facteurs_explicatifs: resultat.facteurs_explicatifs || [],
     date_estimation: new Date(),
   });
+}
 
-  // Étape 4 : retour du résultat
+/**
+ * Fonctionnement (voir le cahier des charges, section 3.1.b) :
+ *  1. on normalise les caractéristiques et on calcule leur hash
+ *  2. on cherche en base une estimation avec le même hash, faite par le modèle ML actif
+ *  3a. trouvée : on réutilise son résultat (source = CACHE)
+ *  3b. pas trouvée : on appelle le service ML (source = NOUVELLE_PREDICTION)
+ *  4. on renvoie le résultat dans le même format dans les deux cas
+ *
+ * idUtilisateur vaut null si la personne n'est pas connectée (visiteur).
+ */
+async function obtenirEstimation(caracteristiques, idUtilisateur = null) {
+  const { reference } = await validerAnneeVehicule(
+    caracteristiques.marque,
+    caracteristiques.modele,
+    Number(caracteristiques.annee)
+  );
+
+  // Le cache n'est valable que pour le modèle actif : si on en active un autre,
+  // les anciennes estimations ne sont plus retrouvées.
+  const modeleActif = await ModeleML.findOne({ where: { statut_actif: true } });
+  if (!modeleActif) {
+    throw new MLIndisponibleError();
+  }
+
+  const { hash } = computeCacheHash(caracteristiques);
+
+  // On cherche seulement parmi les vraies prédictions (pas parmi les lignes
+  // CACHE, qui ne sont que des copies).
+  const estimationExistante = await Estimation.findOne({
+    where: {
+      hash_caracteristiques: hash,
+      id_modele: modeleActif.id_modele,
+      source_resultat: 'NOUVELLE_PREDICTION',
+    },
+    order: [['date_estimation', 'DESC']],
+  });
+
+  if (estimationExistante) {
+    // Compteur de réutilisations de la prédiction d'origine
+    estimationExistante.nb_reutilisations += 1;
+    await estimationExistante.save();
+
+    // Et on ajoute une ligne pour cette demande-ci, avec le prix déjà calculé.
+    const copie = await enregistrerEstimation({
+      caracteristiques,
+      idUtilisateur,
+      reference,
+      modeleActif,
+      hash,
+      source: 'CACHE',
+      resultat: estimationExistante,
+    });
+    return formatResultat(copie, 'CACHE', estimationExistante.nb_reutilisations);
+  }
+
+  // Pas dans le cache (ou modèle changé depuis) : on interroge le service ML
+  let predictionML;
+  try {
+    predictionML = await mlService.predire(caracteristiques);
+  } catch (err) {
+    throw new MLIndisponibleError();
+  }
+
+  const nouvelleEstimation = await enregistrerEstimation({
+    caracteristiques,
+    idUtilisateur,
+    reference,
+    modeleActif,
+    hash,
+    source: 'NOUVELLE_PREDICTION',
+    resultat: {
+      prix_estime: predictionML.prixEstime,
+      marge_confiance_min: predictionML.margeConfiance.min,
+      marge_confiance_max: predictionML.margeConfiance.max,
+      facteurs_explicatifs: predictionML.facteursExplicatifs,
+    },
+  });
+
   return formatResultat(nouvelleEstimation, 'NOUVELLE_PREDICTION');
 }
 
-function formatResultat(estimation, source) {
+// Met l'estimation au format de la réponse de l'API.
+// nbReutilisations est optionnel : pour une réponse venue du cache, on donne
+// le compteur de l'estimation d'origine.
+function formatResultat(estimation, source, nbReutilisations) {
   return {
     idEstimation: estimation.id_estimation,
     vehicule: {
@@ -131,6 +170,7 @@ function formatResultat(estimation, source) {
       etatVehicule: estimation.etat_vehicule,
       puissanceFiscale: estimation.puissance_fiscale,
       ville: estimation.ville,
+      premiereMain: estimation.premiere_main,
     },
     prixEstime: estimation.prix_estime,
     margeConfiance: {
@@ -138,8 +178,11 @@ function formatResultat(estimation, source) {
       max: estimation.marge_confiance_max,
     },
     facteursExplicatifs: estimation.facteurs_explicatifs,
-    source, // 'CACHE' | 'NOUVELLE_PREDICTION'
+    source, // 'CACHE' ou 'NOUVELLE_PREDICTION'
     dateEstimation: estimation.date_estimation,
+    modeleVersion: estimation.modeleUtilise ? estimation.modeleUtilise.nom_version : undefined,
+    nombreReutilisations:
+      nbReutilisations !== undefined ? nbReutilisations : estimation.nb_reutilisations || 0,
   };
 }
 

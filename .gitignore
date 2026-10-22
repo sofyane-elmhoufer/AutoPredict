@@ -1,5 +1,20 @@
-ml/venv/
-**/__pycache__/
+# Dépendances et fichiers générés
+node_modules/
+dist/
+__pycache__/
 *.pyc
+*.log
+*.sqlite
+ml/venv/
 **/.ipynb_checkpoints/
+
+# Réglages et secrets : ne jamais publier ces fichiers
+.env
+.env.*
+!.env.example
+
+# Éditeurs et archives
+.vscode/
+.idea/
 .DS_Store
+*.zip

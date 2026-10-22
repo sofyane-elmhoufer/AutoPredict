@@ -2,8 +2,8 @@ const { verifyToken } = require('../utils/jwt');
 const { Utilisateur } = require('../models');
 
 /**
- * Exige une authentification valide. À utiliser sur les routes réservées
- * aux Utilisateurs connectés (historique, comparaison, export, profil...).
+ * Vérifie qu'un token valide est fourni. Pour les routes réservées aux
+ * utilisateurs connectés (historique, comparaison, export, profil).
  */
 async function requireAuth(req, res, next) {
   try {
@@ -36,9 +36,9 @@ async function requireAuth(req, res, next) {
 }
 
 /**
- * Authentification optionnelle : permet au Visiteur d'accéder à la route
- * (ex. estimation de prix), mais attache req.user si un token valide est fourni.
- * Nécessaire car le Visiteur peut estimer un prix sans compte (cf. cas d'utilisation).
+ * Authentification optionnelle : un visiteur peut accéder à la route (par
+ * exemple pour estimer un prix) mais, s'il envoie un token valide, on
+ * remplit req.user pour rattacher l'estimation à son compte.
  */
 async function optionalAuth(req, res, next) {
   try {
@@ -61,13 +61,13 @@ async function optionalAuth(req, res, next) {
       : null;
     next();
   } catch (err) {
-    req.user = null; // token invalide -> traité comme Visiteur, pas d'erreur bloquante
+    req.user = null; // token invalide : on le traite comme un visiteur
     next();
   }
 }
 
 /**
- * Restreint l'accès à un ou plusieurs rôles (ex. requireRole('ADMINISTRATEUR')).
+ * Limite l'accès à certains rôles, par exemple requireRole('ADMINISTRATEUR').
  */
 function requireRole(...rolesAutorises) {
   return (req, res, next) => {

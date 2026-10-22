@@ -1,30 +1,27 @@
 """
-=============================================================================
- AutoPredict - api.py
- Microservice HTTP exposant le modèle ML au backend Node (mlService.js)
-=============================================================================
-Ce fichier manquait dans le projet : le backend Node (src/services/mlService.js)
-appelle déjà http://localhost:8000/predict et http://localhost:8000/health en
-HTTP, mais rien ne servait ces routes. Ce petit serveur Flask comble ce vide en
-s'appuyant sur predict.py (déjà fonctionnel) pour le calcul réel.
+api.py : petit serveur Flask qui expose le modèle au backend Node.
+
+Le backend (src/services/mlService.js) appelle ce service en HTTP. Le calcul
+du prix est fait par predict.py, ici on s'occupe juste de recevoir la requête
+et de formater la réponse.
 
 Lancement :
     cd ml
     pip install -r requirements.txt
     python src/api.py
-    -> écoute sur http://localhost:8000 (cf. ML_SERVICE_URL dans backend/.env)
+    -> écoute sur http://localhost:8000 (ML_SERVICE_URL dans backend/.env)
 
-Contrat (voir backend/src/services/mlService.js -> versPayloadML) :
+Routes :
   POST /predict
-    Requête : { marque, modele, annee, kilometrage, carburant, boite_vitesses,
-                puissance_fiscale, etat, ville, premiere_main }
-    Réponse : {
+    reçoit : { marque, modele, annee, kilometrage, carburant, boite_vitesses,
+               puissance_fiscale, etat, ville, premiere_main }
+    renvoie : {
       prixEstime: number,
       margeConfiance: { min: number, max: number },
       facteursExplicatifs: [{ feature: string, impact: number }, ...]
     }
-  GET /health
-    Réponse : { status: "ok", modeleCharge: bool }
+  GET /domaine   villes reconnues + bornes numériques (voir train.py)
+  GET /health    { status: "ok", modeleCharge: bool }
 """
 
 import os
@@ -34,15 +31,16 @@ from flask import Flask, jsonify, request
 
 from predict import predict_price, load_model, FEATURES_ATTENDUES, MODEL_PATH
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # -> ml/
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # dossier ml/
 METRICS_PATH = os.path.join(BASE_DIR, "models", "metrics.json")
+DOMAINE_PATH = os.path.join(BASE_DIR, "models", "domaine_entrainement.json")
 
 app = Flask(__name__)
 
-# Marge de confiance approximative : on utilise l'erreur absolue moyenne (MAE)
-# du modèle sélectionné, mesurée sur le jeu de test (cf. train.py / metrics.json).
-# À défaut de métriques disponibles, on retombe sur une marge relative de 15%.
-_MAE_PAR_DEFAUT_RATIO = 0.15
+# La fourchette de confiance = prix estimé +/- la MAE du modèle (erreur moyenne
+# mesurée sur le jeu de test, voir metrics.json). Si le fichier de métriques
+# n'existe pas, on prend 15 % du prix à la place.
+_MARGE_PAR_DEFAUT = 0.15
 
 
 def _charger_mae():
@@ -60,12 +58,26 @@ def _charger_mae():
     return None
 
 
+def _variable_d_origine(nom_colonne: str) -> str:
+    """
+    Après l'encodage one-hot, une variable comme "ville" devient plein de
+    colonnes ("cat__ville_Casablanca", "cat__ville_Fès", ...). Cette fonction
+    retrouve le nom de la variable d'origine pour pouvoir les regrouper.
+    """
+    if nom_colonne.startswith("num__"):
+        return nom_colonne[len("num__"):]
+    sans_prefixe = nom_colonne[len("cat__"):]
+    for variable in FEATURES_ATTENDUES:
+        if sans_prefixe.startswith(variable + "_"):
+            return variable
+    return sans_prefixe
+
+
 def _facteurs_explicatifs(top_n: int = 5):
     """
-    Importance globale des variables du modèle chargé (et non une explication
-    SHAP par prédiction individuelle, ce qui demanderait une dépendance
-    supplémentaire non installée ici). C'est une approximation raisonnable
-    pour donner une intuition des variables qui pèsent le plus dans le prix.
+    Variables qui pèsent le plus dans le modèle (importance globale, additionnée
+    par variable d'origine). Ce n'est pas une explication propre à chaque
+    voiture : les facteurs sont donc les mêmes pour toutes les prédictions.
     """
     try:
         model = load_model()
@@ -75,11 +87,16 @@ def _facteurs_explicatifs(top_n: int = 5):
             return []
 
         preprocessor = inner_pipeline.named_steps["preprocessing"]
-        noms_features = preprocessor.get_feature_names_out()
+        noms_colonnes = preprocessor.get_feature_names_out()
         importances = regressor.feature_importances_
 
-        top = sorted(zip(noms_features, importances), key=lambda x: x[1], reverse=True)[:top_n]
-        return [{"feature": nom, "impact": round(float(imp), 4)} for nom, imp in top]
+        par_variable = {}
+        for nom, importance in zip(noms_colonnes, importances):
+            variable = _variable_d_origine(nom)
+            par_variable[variable] = par_variable.get(variable, 0.0) + float(importance)
+
+        top = sorted(par_variable.items(), key=lambda x: x[1], reverse=True)[:top_n]
+        return [{"feature": nom, "impact": round(imp, 4)} for nom, imp in top]
     except Exception:
         return []
 
@@ -94,6 +111,15 @@ def health():
     return jsonify({"status": "ok", "modeleCharge": modele_charge, "modelPath": MODEL_PATH})
 
 
+@app.get("/domaine")
+def domaine():
+    """Renvoie le domaine d'entraînement généré par train.py (save_domaine_entrainement)."""
+    if not os.path.exists(DOMAINE_PATH):
+        return jsonify({"message": "Domaine d'entraînement non disponible (modèle jamais entraîné)."}), 503
+    with open(DOMAINE_PATH, "r", encoding="utf-8") as f:
+        return jsonify(json.load(f))
+
+
 @app.post("/predict")
 def predict():
     payload = request.get_json(silent=True) or {}
@@ -106,6 +132,9 @@ def predict():
         prix = predict_price(payload)
     except FileNotFoundError as e:
         return jsonify({"message": str(e)}), 503
+    except ValueError as e:
+        # typiquement une année ou un kilométrage qui n'est pas un nombre
+        return jsonify({"message": f"Valeurs invalides : {e}"}), 422
     except Exception as e:
         return jsonify({"message": f"Erreur de prédiction : {e}"}), 500
 
@@ -114,8 +143,8 @@ def predict():
         marge_min = max(0, round(prix - mae))
         marge_max = round(prix + mae)
     else:
-        marge_min = max(0, round(prix * (1 - _MAE_PAR_DEFAUT_RATIO)))
-        marge_max = round(prix * (1 + _MAE_PAR_DEFAUT_RATIO))
+        marge_min = max(0, round(prix * (1 - _MARGE_PAR_DEFAUT)))
+        marge_max = round(prix * (1 + _MARGE_PAR_DEFAUT))
 
     return jsonify(
         {

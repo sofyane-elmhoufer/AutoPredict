@@ -7,7 +7,7 @@ export function AdminDashboard() {
     queryFn: getStatsAdmin,
   });
 
-  if (isLoading) return <p className="p-6 text-gray-500">Chargement...</p>;
+  if (isLoading) return <p className="text-asphalt-500">Chargement...</p>;
 
   return (
     <div className="space-y-6">
@@ -17,27 +17,28 @@ export function AdminDashboard() {
         <StatCard
           label="Taux de réutilisation du cache"
           value={`${(stats?.cache?.tauxReutilisationPourcent ?? 0).toFixed(1)} %`}
+          accent="ochre"
         />
         <StatCard label="Estimations (7 derniers jours)" value={stats?.estimations?.septDerniersJours ?? 0} />
-        <StatCard label="Depuis le cache" value={stats?.estimations?.depuisCache ?? 0} />
-        <StatCard label="Nouvelles prédictions" value={stats?.estimations?.nouvellesPredictions ?? 0} />
+        <StatCard label="Depuis le cache" value={stats?.estimations?.depuisCache ?? 0} accent="ochre" />
+        <StatCard label="Nouvelles prédictions" value={stats?.estimations?.nouvellesPredictions ?? 0} accent="teal" />
       </div>
 
-      <div className="rounded-lg border bg-white p-6">
-        <h2 className="mb-3 text-lg font-semibold text-primary-700">Modèle ML actif</h2>
+      <div className="card p-6">
+        <h2 className="mb-3 font-display text-lg font-semibold text-ink-800">Modèle ML actif</h2>
         {stats?.modeleActif ? (
-          <div className="grid grid-cols-1 gap-2 text-sm text-gray-700 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-2 text-sm text-ink-700 sm:grid-cols-2">
             <p>Version : <span className="font-medium">{stats.modeleActif.nomVersion}</span></p>
             <p>Algorithme : <span className="font-medium">{stats.modeleActif.algorithme}</span></p>
-            <p>Score R² : <span className="font-medium">{stats.modeleActif.scoreR2}</span></p>
-            <p>MAE : <span className="font-medium">{stats.modeleActif.scoreMae} DH</span></p>
+            <p>Score R² : <span className="font-medium">{stats.modeleActif.scoreR2 ?? "—"}</span></p>
+            <p>MAE : <span className="font-medium">{stats.modeleActif.scoreMae != null ? `${stats.modeleActif.scoreMae.toLocaleString("fr-FR")} DH` : "—"}</span></p>
           </div>
         ) : (
-          <p className="text-sm text-gray-500">Aucun modèle actif.</p>
+          <p className="text-sm text-asphalt-500">Aucun modèle actif.</p>
         )}
         <p className="mt-4 text-sm">
           Service ML :{" "}
-          <span className={stats?.serviceML?.up ? "font-medium text-green-600" : "font-medium text-red-600"}>
+          <span className={stats?.serviceML?.up ? "font-medium text-teal-600" : "font-medium text-taxi-500"}>
             {stats?.serviceML?.up ? "en ligne" : "indisponible"}
           </span>
         </p>
@@ -46,11 +47,16 @@ export function AdminDashboard() {
   );
 }
 
-function StatCard({ label, value }) {
+function StatCard({ label, value, accent = "ink" }) {
+  const couleurs = {
+    ink: "text-ink-800",
+    ochre: "text-ochre-600",
+    teal: "text-teal-600",
+  };
   return (
-    <div className="rounded-lg border bg-white p-6 text-center">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="mt-2 text-3xl font-bold text-primary-700">{value}</p>
+    <div className="card p-6 text-center">
+      <p className="text-sm text-asphalt-500">{label}</p>
+      <p className={`mt-2 font-plate text-3xl font-bold ${couleurs[accent]}`}>{value}</p>
     </div>
   );
 }

@@ -14,7 +14,7 @@ const { errorHandler, notFoundHandler } = require('./middlewares/error.middlewar
 
 const app = express();
 
-// --- Sécurité et middlewares globaux ---
+// Sécurité et middlewares globaux
 app.use(helmet());
 app.use(
   cors({
@@ -26,7 +26,7 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
-// Limite le nombre de requêtes pour éviter les abus (ex. spam du formulaire)
+// On limite le nombre de requêtes par IP pour éviter le spam
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 300,
@@ -36,19 +36,19 @@ const apiLimiter = rateLimit({
 });
 app.use('/api', apiLimiter);
 
-// --- Health check ---
+// Route pour vérifier que le serveur tourne
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'AutoPredict API', timestamp: new Date().toISOString() });
 });
 
-// --- Routes métier ---
+// Routes de l'API
 app.use('/api/auth', authRoutes);
 app.use('/api/estimations', estimationRoutes);
 app.use('/api/catalogue', catalogueRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/modeles', modeleRoutes);
 
-// --- 404 & gestion d'erreurs ---
+// 404 et gestion des erreurs
 app.use(notFoundHandler);
 app.use(errorHandler);
 

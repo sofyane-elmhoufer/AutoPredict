@@ -1,47 +1,37 @@
 """
-=============================================================================
- AutoPredict - predict.py
- Chargement du modèle entraîné et prédiction du prix d'un véhicule
-=============================================================================
-Ce module expose la fonction predict_price(), destinée à être appelée par
-l'API back-end (voir cahier des charges : ModèleML.predire(caracteristiques)).
+predict.py : charge le modèle entraîné et prédit le prix d'une voiture.
 
-Utilisation en script :
-    python predict.py
+Le backend passe par api.py, qui appelle predict_price() d'ici.
 
-Utilisation en import :
+Test rapide en ligne de commande :
+    python src/predict.py
+
+Utilisation depuis un autre fichier :
     from predict import predict_price
     prix = predict_price({...})
 """
 
-# =============================================================================
-# 1. IMPORTS
-# =============================================================================
 import os
+
 import joblib
 import pandas as pd
 
-
-# =============================================================================
-# 2. CONFIGURATION
-# =============================================================================
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # -> ml/
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # dossier ml/
 MODEL_PATH = os.path.join(BASE_DIR, "models", "model_prix.joblib")
 
+# Les colonnes attendues par le modèle, dans l'ordre de train.py
 FEATURES_ATTENDUES = [
     "marque", "modele", "annee", "kilometrage", "carburant",
     "boite_vitesses", "puissance_fiscale", "etat", "ville", "premiere_main",
 ]
 
-
-# =============================================================================
-# 3. CHARGEMENT DU MODÈLE (une seule fois, mis en cache)
-# =============================================================================
+# Le modèle pèse plusieurs dizaines de Mo : on le charge une seule fois
+# puis on le garde en mémoire pour les appels suivants.
 _model = None
 
 
 def load_model(path: str = MODEL_PATH):
-    """Charge le pipeline complet (préprocessing + modèle) sauvegardé par train.py."""
+    """Charge le pipeline sauvegardé par train.py (préprocessing + régression)."""
     global _model
     if _model is None:
         if not os.path.exists(path):
@@ -53,30 +43,21 @@ def load_model(path: str = MODEL_PATH):
     return _model
 
 
-# =============================================================================
-# 4. VALIDATION DES CARACTÉRISTIQUES REÇUES
-# =============================================================================
 def validate_input(caracteristiques: dict) -> None:
-    """Vérifie que toutes les caractéristiques nécessaires sont présentes."""
+    """Vérifie qu'il ne manque aucune caractéristique."""
     manquantes = [f for f in FEATURES_ATTENDUES if f not in caracteristiques]
     if manquantes:
         raise ValueError(f"Caractéristiques manquantes : {manquantes}")
 
 
-# =============================================================================
-# 5. PRÉDICTION
-# =============================================================================
 def predict_price(caracteristiques: dict) -> float:
     """
-    Prédit le prix (en MAD) d'un véhicule à partir de ses caractéristiques.
+    Renvoie le prix estimé (en MAD, arrondi à l'unité).
 
-    Paramètre :
-        caracteristiques : dict avec les clés suivantes
-            marque, modele, annee, kilometrage, carburant,
-            boite_vitesses, puissance_fiscale, etat, ville, premiere_main
-
-    Retour :
-        float : prix estimé en MAD (arrondi à l'unité)
+    `caracteristiques` est un dict avec les clés : marque, modele, annee,
+    kilometrage, carburant, boite_vitesses, puissance_fiscale, etat, ville,
+    premiere_main. Les valeurs textuelles doivent être écrites comme dans le
+    dataset d'entraînement (ex. "Diesel", "Manuelle", "Oui").
     """
     validate_input(caracteristiques)
     model = load_model()
@@ -86,9 +67,6 @@ def predict_price(caracteristiques: dict) -> float:
     return round(float(prix_estime))
 
 
-# =============================================================================
-# 6. EXEMPLE D'UTILISATION
-# =============================================================================
 def main():
     exemple_vehicule = {
         "marque": "Dacia",

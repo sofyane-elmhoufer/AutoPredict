@@ -1,8 +1,8 @@
 const { validationResult } = require('express-validator');
 
 /**
- * À placer après un tableau de règles express-validator dans une route.
- * Renvoie 422 avec le détail des champs invalides si la validation échoue.
+ * À mettre après les règles express-validator d'une route.
+ * Renvoie 422 avec la liste des champs invalides.
  */
 function handleValidationErrors(req, res, next) {
   const errors = validationResult(req);
@@ -16,7 +16,7 @@ function handleValidationErrors(req, res, next) {
 }
 
 /**
- * Middleware global d'erreurs (placé en dernier dans app.js).
+ * Gestion globale des erreurs (placée en dernier dans app.js).
  */
 function errorHandler(err, req, res, next) {
   console.error('❌ Erreur non gérée :', err);

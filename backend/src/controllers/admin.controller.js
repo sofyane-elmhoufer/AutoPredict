@@ -5,8 +5,8 @@ const { toCamelCase } = require('../utils/caseConverter');
 
 /**
  * GET /api/admin/dashboard
- * Correspond à Administrateur.consulterDashboard()
- * Statistiques globales : usage du site, qualité du modèle, santé du service ML.
+ * Chiffres du tableau de bord : utilisateurs, estimations, cache, modèle actif
+ * et état du service ML.
  */
 async function getDashboard(req, res, next) {
   try {
@@ -29,7 +29,7 @@ async function getDashboard(req, res, next) {
     const tauxReutilisationCache =
       totalEstimations > 0 ? Number(((estimationsCache / totalEstimations) * 100).toFixed(2)) : 0;
 
-    // Estimations des 7 derniers jours (tendance d'usage)
+    // Nombre d'estimations sur les 7 derniers jours
     const septJoursAvant = new Date();
     septJoursAvant.setDate(septJoursAvant.getDate() - 7);
     const estimationsRecentes = await Estimation.count({
@@ -64,19 +64,21 @@ async function getDashboard(req, res, next) {
 
 /**
  * GET /api/admin/cache/supervision
- * Correspond à Administrateur.superviserCache()
- * Détail du taux de réutilisation du cache, par jour et par modèle.
+ * Nombre d'estimations (cache ou nouvelle prédiction) par version du modèle
+ * et par jour.
  */
 async function superviserCache(req, res, next) {
   try {
     const repartitionParModele = await Estimation.findAll({
+      // On écrit "Estimation.id_modele" avec le nom de la table : la jointure
+      // contient aussi une colonne id_modele, et sans ça SQL ne sait pas laquelle prendre.
       attributes: [
-        'id_modele',
+        [col('Estimation.id_modele'), 'id_modele'],
         'source_resultat',
         [fn('COUNT', col('Estimation.id_estimation')), 'total'],
       ],
       include: [{ model: ModeleML, as: 'modeleUtilise', attributes: ['nom_version'] }],
-      group: ['id_modele', 'source_resultat', 'modeleUtilise.id_modele'],
+      group: ['Estimation.id_modele', 'Estimation.source_resultat', 'modeleUtilise.id_modele'],
     });
 
     const parJour = await Estimation.findAll({
@@ -135,7 +137,7 @@ async function listUtilisateurs(req, res, next) {
 
 /**
  * PATCH /api/admin/utilisateurs/:id
- * Correspond à Administrateur.gererUtilisateurs()
+ * Active ou désactive un compte, ou change son rôle.
  * Body : { statutCompte?: boolean, role?: 'UTILISATEUR'|'ADMINISTRATEUR' }
  */
 async function gererUtilisateur(req, res, next) {

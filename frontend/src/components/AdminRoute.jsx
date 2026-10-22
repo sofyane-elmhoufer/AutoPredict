@@ -1,9 +1,8 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-// Protège les routes du back-office : seul le rôle ADMINISTRATEUR passe.
-// Un utilisateur standard connecté est renvoyé à l'accueil, pas au login
-// (il est bien authentifié, juste pas autorisé).
+// Protège le back-office : seul le rôle ADMINISTRATEUR passe.
+// Un utilisateur simple est renvoyé à l'accueil (il est connecté, mais pas autorisé).
 export function AdminRoute() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
 

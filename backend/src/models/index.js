@@ -4,18 +4,18 @@ const Estimation = require('./Estimation');
 const ModeleML = require('./ModeleML');
 const CatalogueVehicule = require('./CatalogueVehicule');
 
-// --- ENREGISTRER : Utilisateur (0,N) -- Estimation (0,1) ---
+// Utilisateur -> Estimation
 Utilisateur.hasMany(Estimation, {
   foreignKey: 'id_utilisateur',
   as: 'estimations',
-  onDelete: 'SET NULL', // si le compte est supprimé, l'historique n'est pas perdu (anonymisé)
+  onDelete: 'SET NULL', // si le compte est supprimé, on garde l'estimation (sans utilisateur)
 });
 Estimation.belongsTo(Utilisateur, {
   foreignKey: 'id_utilisateur',
   as: 'utilisateur',
 });
 
-// --- GENERER : ModeleML (1,1) -- Estimation (0,N) ---
+// ModeleML -> Estimation
 ModeleML.hasMany(Estimation, {
   foreignKey: 'id_modele',
   as: 'estimations',
@@ -25,7 +25,7 @@ Estimation.belongsTo(ModeleML, {
   as: 'modeleUtilise',
 });
 
-// --- CONCERNER : Estimation (1,1) -- CatalogueVehicule (0,N) ---
+// Estimation -> CatalogueVehicule
 CatalogueVehicule.hasMany(Estimation, {
   foreignKey: 'id_vehicule_ref',
   as: 'estimations',

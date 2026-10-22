@@ -1,0 +1,1346 @@
+[
+  {
+    "marque": "Alfa Romeo",
+    "modele": "159",
+    "anneeMin": 2007,
+    "anneeMax": 2013
+  },
+  {
+    "marque": "Alfa Romeo",
+    "modele": "Autre",
+    "anneeMin": 2009,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Alfa Romeo",
+    "modele": "Giulietta",
+    "anneeMin": 2011,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Audi",
+    "modele": "A1",
+    "anneeMin": 2011,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Audi",
+    "modele": "A3",
+    "anneeMin": 2000,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Audi",
+    "modele": "A4",
+    "anneeMin": 1999,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Audi",
+    "modele": "A5",
+    "anneeMin": 2008,
+    "anneeMax": 2017
+  },
+  {
+    "marque": "Audi",
+    "modele": "A6",
+    "anneeMin": 2001,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Audi",
+    "modele": "Autre",
+    "anneeMin": 2000,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Audi",
+    "modele": "Q3",
+    "anneeMin": 2012,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Audi",
+    "modele": "Q5",
+    "anneeMin": 2009,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Audi",
+    "modele": "Q7",
+    "anneeMin": 2007,
+    "anneeMax": 2017
+  },
+  {
+    "marque": "BMW",
+    "modele": "Autre",
+    "anneeMin": 2008,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "BMW",
+    "modele": "M3",
+    "anneeMin": 2004,
+    "anneeMax": 2012
+  },
+  {
+    "marque": "BMW",
+    "modele": "Serie 1",
+    "anneeMin": 2005,
+    "anneeMax": 2022
+  },
+  {
+    "marque": "BMW",
+    "modele": "Serie 3",
+    "anneeMin": 2001,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "BMW",
+    "modele": "Serie 3 coupé",
+    "anneeMin": 2005,
+    "anneeMax": 2012
+  },
+  {
+    "marque": "BMW",
+    "modele": "Serie 4",
+    "anneeMin": 2014,
+    "anneeMax": 2017
+  },
+  {
+    "marque": "BMW",
+    "modele": "Serie 5",
+    "anneeMin": 1998,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "BMW",
+    "modele": "X1",
+    "anneeMin": 2010,
+    "anneeMax": 2017
+  },
+  {
+    "marque": "BMW",
+    "modele": "X3",
+    "anneeMin": 2005,
+    "anneeMax": 2017
+  },
+  {
+    "marque": "BMW",
+    "modele": "X5",
+    "anneeMin": 2003,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Chevrolet",
+    "modele": "Autre",
+    "anneeMin": 2012,
+    "anneeMax": 2012
+  },
+  {
+    "marque": "Chevrolet",
+    "modele": "Captiva",
+    "anneeMin": 2008,
+    "anneeMax": 2014
+  },
+  {
+    "marque": "Chevrolet",
+    "modele": "Cruze",
+    "anneeMin": 2010,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Chevrolet",
+    "modele": "Spark",
+    "anneeMin": 2012,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Citroen",
+    "modele": "Autre",
+    "anneeMin": 1997,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Citroen",
+    "modele": "Berlingo",
+    "anneeMin": 2000,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Citroen",
+    "modele": "C-ELYSEE",
+    "anneeMin": 2013,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Citroen",
+    "modele": "C-Elysée",
+    "anneeMin": 2013,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Citroen",
+    "modele": "C3",
+    "anneeMin": 2008,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Citroen",
+    "modele": "C4",
+    "anneeMin": 2005,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Citroen",
+    "modele": "C4 CACTUS",
+    "anneeMin": 2015,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Citroen",
+    "modele": "C4 Picasso",
+    "anneeMin": 2008,
+    "anneeMax": 2014
+  },
+  {
+    "marque": "Citroen",
+    "modele": "C5",
+    "anneeMin": 1991,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Dacia",
+    "modele": "Autre",
+    "anneeMin": 2015,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Dacia",
+    "modele": "Dokker",
+    "anneeMin": 2012,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Dacia",
+    "modele": "Dokker Van",
+    "anneeMin": 2013,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Dacia",
+    "modele": "Duster",
+    "anneeMin": 2010,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Dacia",
+    "modele": "Lodgy",
+    "anneeMin": 2008,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Dacia",
+    "modele": "Logan",
+    "anneeMin": 1992,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Dacia",
+    "modele": "Sandero",
+    "anneeMin": 2009,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Fiat",
+    "modele": "500",
+    "anneeMin": 2008,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Fiat",
+    "modele": "500L",
+    "anneeMin": 2013,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Fiat",
+    "modele": "500X",
+    "anneeMin": 2016,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Fiat",
+    "modele": "Autre",
+    "anneeMin": 1996,
+    "anneeMax": 2017
+  },
+  {
+    "marque": "Fiat",
+    "modele": "Doblo",
+    "anneeMin": 2005,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Fiat",
+    "modele": "FIORINO",
+    "anneeMin": 2017,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Fiat",
+    "modele": "FREEMONT",
+    "anneeMin": 2012,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Fiat",
+    "modele": "GRANDE PUNTO",
+    "anneeMin": 2007,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Fiat",
+    "modele": "Linea",
+    "anneeMin": 2007,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Fiat",
+    "modele": "Panda",
+    "anneeMin": 2007,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Fiat",
+    "modele": "Punto",
+    "anneeMin": 2006,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Fiat",
+    "modele": "TIPO",
+    "anneeMin": 2015,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Ford",
+    "modele": "Autre",
+    "anneeMin": 1999,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Ford",
+    "modele": "BEDFORD",
+    "anneeMin": 2013,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Ford",
+    "modele": "C-Max",
+    "anneeMin": 2005,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Ford",
+    "modele": "CONNECT",
+    "anneeMin": 2010,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Ford",
+    "modele": "Fiesta",
+    "anneeMin": 2005,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Ford",
+    "modele": "Focus",
+    "anneeMin": 2000,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Ford",
+    "modele": "Fusion",
+    "anneeMin": 2007,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Ford",
+    "modele": "Ka",
+    "anneeMin": 2011,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Ford",
+    "modele": "Kuga",
+    "anneeMin": 2006,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Ford",
+    "modele": "Mondeo",
+    "anneeMin": 2009,
+    "anneeMax": 2014
+  },
+  {
+    "marque": "Ford",
+    "modele": "Ranger",
+    "anneeMin": 2008,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Ford",
+    "modele": "Tourneo",
+    "anneeMin": 2013,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Ford",
+    "modele": "Transit",
+    "anneeMin": 2000,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Hyundai",
+    "modele": "Accent",
+    "anneeMin": 2007,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Hyundai",
+    "modele": "Autre",
+    "anneeMin": 2005,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Hyundai",
+    "modele": "CRETA",
+    "anneeMin": 2016,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Hyundai",
+    "modele": "Elantra",
+    "anneeMin": 2007,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Hyundai",
+    "modele": "Grand i10",
+    "anneeMin": 2015,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Hyundai",
+    "modele": "H-1",
+    "anneeMin": 2005,
+    "anneeMax": 2017
+  },
+  {
+    "marque": "Hyundai",
+    "modele": "H-100",
+    "anneeMin": 1995,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Hyundai",
+    "modele": "Santa Fe",
+    "anneeMin": 2001,
+    "anneeMax": 2017
+  },
+  {
+    "marque": "Hyundai",
+    "modele": "Tucson",
+    "anneeMin": 2004,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Hyundai",
+    "modele": "i 10",
+    "anneeMin": 2009,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Hyundai",
+    "modele": "i 20",
+    "anneeMin": 2012,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Hyundai",
+    "modele": "i 30",
+    "anneeMin": 2010,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Hyundai",
+    "modele": "i 40",
+    "anneeMin": 2012,
+    "anneeMax": 2017
+  },
+  {
+    "marque": "Hyundai",
+    "modele": "ix 35",
+    "anneeMin": 2011,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Jeep",
+    "modele": "Autre",
+    "anneeMin": 1999,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Jeep",
+    "modele": "Cherokee",
+    "anneeMin": 2006,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Jeep",
+    "modele": "Compass",
+    "anneeMin": 2007,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Jeep",
+    "modele": "Grand Cherokee",
+    "anneeMin": 2007,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Jeep",
+    "modele": "Renegade",
+    "anneeMin": 2017,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Kia",
+    "modele": "Autre",
+    "anneeMin": 2004,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Kia",
+    "modele": "Carens",
+    "anneeMin": 2007,
+    "anneeMax": 2017
+  },
+  {
+    "marque": "Kia",
+    "modele": "Ceed",
+    "anneeMin": 2009,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Kia",
+    "modele": "Cerato",
+    "anneeMin": 2004,
+    "anneeMax": 2011
+  },
+  {
+    "marque": "Kia",
+    "modele": "Picanto",
+    "anneeMin": 2009,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Kia",
+    "modele": "Rio",
+    "anneeMin": 2007,
+    "anneeMax": 2017
+  },
+  {
+    "marque": "Kia",
+    "modele": "Sorento",
+    "anneeMin": 2003,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Kia",
+    "modele": "Soul",
+    "anneeMin": 2009,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Kia",
+    "modele": "Sportage",
+    "anneeMin": 2007,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Land Rover",
+    "modele": "Autre",
+    "anneeMin": 2015,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Land Rover",
+    "modele": "Defender",
+    "anneeMin": 1993,
+    "anneeMax": 2001
+  },
+  {
+    "marque": "Land Rover",
+    "modele": "Discovery Sport",
+    "anneeMin": 2013,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Land Rover",
+    "modele": "Freelander",
+    "anneeMin": 2000,
+    "anneeMax": 2012
+  },
+  {
+    "marque": "Land Rover",
+    "modele": "Range Rover",
+    "anneeMin": 2002,
+    "anneeMax": 2015
+  },
+  {
+    "marque": "Land Rover",
+    "modele": "Range Rover Evoque",
+    "anneeMin": 2012,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Land Rover",
+    "modele": "Range Rover Sport",
+    "anneeMin": 2007,
+    "anneeMax": 2013
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "190",
+    "anneeMin": 1990,
+    "anneeMax": 2013
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "207",
+    "anneeMin": 2011,
+    "anneeMax": 2011
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "220",
+    "anneeMin": 1993,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "250",
+    "anneeMin": 1992,
+    "anneeMax": 2011
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "270",
+    "anneeMin": 2001,
+    "anneeMax": 2005
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "280",
+    "anneeMin": 2006,
+    "anneeMax": 2009
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "300",
+    "anneeMin": 1999,
+    "anneeMax": 2015
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "Autre",
+    "anneeMin": 1990,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "CLASSE GLK",
+    "anneeMin": 2010,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "CLASSE ML",
+    "anneeMin": 2003,
+    "anneeMax": 2014
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "Classe A",
+    "anneeMin": 2002,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "Classe B",
+    "anneeMin": 2006,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "Classe C",
+    "anneeMin": 1994,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "Classe CLA",
+    "anneeMin": 2013,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "Classe E",
+    "anneeMin": 1996,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "Classe GLA",
+    "anneeMin": 2014,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "Classe S",
+    "anneeMin": 1995,
+    "anneeMax": 2013
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "Sprinter",
+    "anneeMin": 1996,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Mercedes-Benz",
+    "modele": "Vito",
+    "anneeMin": 1999,
+    "anneeMax": 2017
+  },
+  {
+    "marque": "Nissan",
+    "modele": "280",
+    "anneeMin": 2014,
+    "anneeMax": 2015
+  },
+  {
+    "marque": "Nissan",
+    "modele": "Autre",
+    "anneeMin": 1990,
+    "anneeMax": 2017
+  },
+  {
+    "marque": "Nissan",
+    "modele": "Juke",
+    "anneeMin": 2013,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Nissan",
+    "modele": "Micra",
+    "anneeMin": 2012,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Nissan",
+    "modele": "NOTE",
+    "anneeMin": 2007,
+    "anneeMax": 2017
+  },
+  {
+    "marque": "Nissan",
+    "modele": "Navara",
+    "anneeMin": 2004,
+    "anneeMax": 2013
+  },
+  {
+    "marque": "Nissan",
+    "modele": "Pathfinder",
+    "anneeMin": 2005,
+    "anneeMax": 2014
+  },
+  {
+    "marque": "Nissan",
+    "modele": "Qashqai",
+    "anneeMin": 2007,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Nissan",
+    "modele": "X-Trail",
+    "anneeMin": 2003,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Opel",
+    "modele": "ADAM",
+    "anneeMin": 2016,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Opel",
+    "modele": "Astra",
+    "anneeMin": 2001,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Opel",
+    "modele": "Autre",
+    "anneeMin": 2007,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Opel",
+    "modele": "Corsa",
+    "anneeMin": 2008,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Opel",
+    "modele": "Crossland X",
+    "anneeMin": 2019,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Opel",
+    "modele": "Insignia",
+    "anneeMin": 2009,
+    "anneeMax": 2017
+  },
+  {
+    "marque": "Opel",
+    "modele": "Zafira",
+    "anneeMin": 2000,
+    "anneeMax": 2010
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "2008",
+    "anneeMin": 2008,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "206",
+    "anneeMin": 2001,
+    "anneeMax": 2013
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "206+",
+    "anneeMin": 2009,
+    "anneeMax": 2014
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "207",
+    "anneeMin": 2006,
+    "anneeMax": 2013
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "208",
+    "anneeMin": 2013,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "3008",
+    "anneeMin": 2009,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "301",
+    "anneeMin": 2012,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "307",
+    "anneeMin": 2002,
+    "anneeMax": 2008
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "308",
+    "anneeMin": 2002,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "407",
+    "anneeMin": 2004,
+    "anneeMax": 2015
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "407 SW",
+    "anneeMin": 2006,
+    "anneeMax": 2010
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "508",
+    "anneeMin": 2011,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "Autre",
+    "anneeMin": 1996,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "Bipper",
+    "anneeMin": 2012,
+    "anneeMax": 2015
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "Boxer",
+    "anneeMin": 1999,
+    "anneeMax": 2017
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "Expert",
+    "anneeMin": 2010,
+    "anneeMax": 2015
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "Partner",
+    "anneeMin": 2002,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Peugeot",
+    "modele": "Tepee",
+    "anneeMin": 2008,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Renault",
+    "modele": "12",
+    "anneeMin": 2005,
+    "anneeMax": 2013
+  },
+  {
+    "marque": "Renault",
+    "modele": "19",
+    "anneeMin": 1992,
+    "anneeMax": 2007
+  },
+  {
+    "marque": "Renault",
+    "modele": "Autre",
+    "anneeMin": 2004,
+    "anneeMax": 2022
+  },
+  {
+    "marque": "Renault",
+    "modele": "Captur",
+    "anneeMin": 2013,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Renault",
+    "modele": "Clio",
+    "anneeMin": 2000,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Renault",
+    "modele": "Espace",
+    "anneeMin": 2000,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Renault",
+    "modele": "Fluence",
+    "anneeMin": 2010,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Renault",
+    "modele": "Kadjar",
+    "anneeMin": 2016,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Renault",
+    "modele": "Kangoo",
+    "anneeMin": 2000,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Renault",
+    "modele": "Kangoo Express",
+    "anneeMin": 2014,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Renault",
+    "modele": "Koleos",
+    "anneeMin": 2009,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Renault",
+    "modele": "Laguna",
+    "anneeMin": 2000,
+    "anneeMax": 2011
+  },
+  {
+    "marque": "Renault",
+    "modele": "Latitude",
+    "anneeMin": 2011,
+    "anneeMax": 2014
+  },
+  {
+    "marque": "Renault",
+    "modele": "Master",
+    "anneeMin": 2005,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Renault",
+    "modele": "Megane",
+    "anneeMin": 1999,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Renault",
+    "modele": "Megane 3",
+    "anneeMin": 2005,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "Renault",
+    "modele": "Megane 4",
+    "anneeMin": 2017,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Renault",
+    "modele": "Megane Coupe",
+    "anneeMin": 2001,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Renault",
+    "modele": "Megane Sedan",
+    "anneeMin": 2017,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Renault",
+    "modele": "Scenic",
+    "anneeMin": 2001,
+    "anneeMax": 2014
+  },
+  {
+    "marque": "Renault",
+    "modele": "Symbol",
+    "anneeMin": 2009,
+    "anneeMax": 2013
+  },
+  {
+    "marque": "Renault",
+    "modele": "Talisman",
+    "anneeMin": 2016,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Seat",
+    "modele": "Autre",
+    "anneeMin": 2006,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Seat",
+    "modele": "Cordoba",
+    "anneeMin": 2006,
+    "anneeMax": 2009
+  },
+  {
+    "marque": "Seat",
+    "modele": "Ibiza",
+    "anneeMin": 2006,
+    "anneeMax": 2022
+  },
+  {
+    "marque": "Seat",
+    "modele": "Leon",
+    "anneeMin": 2007,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Skoda",
+    "modele": "Autre",
+    "anneeMin": 2007,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Skoda",
+    "modele": "Fabia",
+    "anneeMin": 2007,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Skoda",
+    "modele": "Octavia",
+    "anneeMin": 2000,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Skoda",
+    "modele": "RAPID",
+    "anneeMin": 2013,
+    "anneeMax": 2015
+  },
+  {
+    "marque": "Skoda",
+    "modele": "Superb",
+    "anneeMin": 2009,
+    "anneeMax": 2014
+  },
+  {
+    "marque": "Skoda",
+    "modele": "Yeti",
+    "anneeMin": 2012,
+    "anneeMax": 2017
+  },
+  {
+    "marque": "Suzuki",
+    "modele": "Autre",
+    "anneeMin": 2007,
+    "anneeMax": 2015
+  },
+  {
+    "marque": "Suzuki",
+    "modele": "Grand Vitara",
+    "anneeMin": 1998,
+    "anneeMax": 2015
+  },
+  {
+    "marque": "Suzuki",
+    "modele": "Vitara",
+    "anneeMin": 2006,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Toyota",
+    "modele": "4RUNNER",
+    "anneeMin": 1992,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Toyota",
+    "modele": "Auris",
+    "anneeMin": 2001,
+    "anneeMax": 2018
+  },
+  {
+    "marque": "Toyota",
+    "modele": "Autre",
+    "anneeMin": 1999,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Toyota",
+    "modele": "Avensis",
+    "anneeMin": 2004,
+    "anneeMax": 2006
+  },
+  {
+    "marque": "Toyota",
+    "modele": "Aygo",
+    "anneeMin": 2011,
+    "anneeMax": 2012
+  },
+  {
+    "marque": "Toyota",
+    "modele": "C-HR",
+    "anneeMin": 2018,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Toyota",
+    "modele": "Corolla",
+    "anneeMin": 2000,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Toyota",
+    "modele": "Corolla verso",
+    "anneeMin": 2005,
+    "anneeMax": 2013
+  },
+  {
+    "marque": "Toyota",
+    "modele": "Hilux",
+    "anneeMin": 1992,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Toyota",
+    "modele": "Land Cruiser",
+    "anneeMin": 1997,
+    "anneeMax": 2005
+  },
+  {
+    "marque": "Toyota",
+    "modele": "Prado",
+    "anneeMin": 1997,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Toyota",
+    "modele": "RAV 4",
+    "anneeMin": 2004,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Toyota",
+    "modele": "VERSO",
+    "anneeMin": 2004,
+    "anneeMax": 2012
+  },
+  {
+    "marque": "Toyota",
+    "modele": "Yaris",
+    "anneeMin": 2007,
+    "anneeMax": 2022
+  },
+  {
+    "marque": "Volkswagen",
+    "modele": "Autre",
+    "anneeMin": 1995,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Volkswagen",
+    "modele": "Bora",
+    "anneeMin": 1999,
+    "anneeMax": 2005
+  },
+  {
+    "marque": "Volkswagen",
+    "modele": "CC",
+    "anneeMin": 2007,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Volkswagen",
+    "modele": "Caddy",
+    "anneeMin": 2005,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Volkswagen",
+    "modele": "GOLF 4",
+    "anneeMin": 1998,
+    "anneeMax": 2007
+  },
+  {
+    "marque": "Volkswagen",
+    "modele": "GOLF 5",
+    "anneeMin": 1996,
+    "anneeMax": 2013
+  },
+  {
+    "marque": "Volkswagen",
+    "modele": "GOLF 6",
+    "anneeMin": 2008,
+    "anneeMax": 2012
+  },
+  {
+    "marque": "Volkswagen",
+    "modele": "GOLF 7",
+    "anneeMin": 2013,
+    "anneeMax": 2020
+  },
+  {
+    "marque": "Volkswagen",
+    "modele": "Golf",
+    "anneeMin": 1999,
+    "anneeMax": 2015
+  },
+  {
+    "marque": "Volkswagen",
+    "modele": "Jetta",
+    "anneeMin": 2006,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Volkswagen",
+    "modele": "PASSAT CC",
+    "anneeMin": 2008,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Volkswagen",
+    "modele": "Passat",
+    "anneeMin": 1999,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Volkswagen",
+    "modele": "Polo",
+    "anneeMin": 2002,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Volkswagen",
+    "modele": "SHARAN",
+    "anneeMin": 2002,
+    "anneeMax": 2007
+  },
+  {
+    "marque": "Volkswagen",
+    "modele": "Tiguan",
+    "anneeMin": 2008,
+    "anneeMax": 2021
+  },
+  {
+    "marque": "Volkswagen",
+    "modele": "Touareg",
+    "anneeMin": 2003,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "Volkswagen",
+    "modele": "Touran",
+    "anneeMin": 2005,
+    "anneeMax": 2019
+  },
+  {
+    "marque": "mini",
+    "modele": "Autre",
+    "anneeMin": 2005,
+    "anneeMax": 2016
+  },
+  {
+    "marque": "mini",
+    "modele": "cooper",
+    "anneeMin": 2003,
+    "anneeMax": 2015
+  },
+  {
+    "marque": "mini",
+    "modele": "one",
+    "anneeMin": 2006,
+    "anneeMax": 2018
+  }
+]

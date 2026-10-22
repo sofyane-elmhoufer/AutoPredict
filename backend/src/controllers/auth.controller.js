@@ -5,7 +5,7 @@ const { generateToken } = require('../utils/jwt');
 
 /**
  * POST /api/auth/register
- * Correspond à Utilisateur.creerCompte()
+ * Création d'un compte.
  */
 async function register(req, res, next) {
   try {
@@ -41,7 +41,7 @@ async function register(req, res, next) {
 
 /**
  * POST /api/auth/login
- * Correspond à Utilisateur.authentifier()
+ * Connexion : renvoie un token JWT.
  */
 async function login(req, res, next) {
   try {
@@ -75,6 +75,7 @@ async function login(req, res, next) {
 
 /**
  * GET /api/auth/me
+ * Profil de l'utilisateur connecté.
  */
 async function me(req, res, next) {
   try {
@@ -88,7 +89,7 @@ async function me(req, res, next) {
 
 /**
  * PUT /api/auth/me
- * Correspond à Utilisateur.modifierProfil()
+ * Modification du profil.
  */
 async function updateProfile(req, res, next) {
   try {
@@ -114,14 +115,14 @@ async function updateProfile(req, res, next) {
 
 /**
  * DELETE /api/auth/me
- * Correspond à Utilisateur.supprimerCompte()
+ * Suppression du compte.
  */
 async function deleteAccount(req, res, next) {
   try {
     const utilisateur = await Utilisateur.findByPk(req.user.id);
     if (!utilisateur) return res.status(404).json({ message: 'Utilisateur introuvable.' });
 
-    // Anonymisation plutôt que suppression brute, pour préserver l'intégrité de l'historique
+    // On anonymise le compte au lieu de le supprimer, pour garder l'historique des estimations
     utilisateur.email = `anonyme_${utilisateur.id_utilisateur}_${Date.now()}@deleted.local`;
     utilisateur.nom = 'Compte supprimé';
     utilisateur.prenom = '';

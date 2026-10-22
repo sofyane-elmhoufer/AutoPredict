@@ -4,7 +4,7 @@ const { toCamelCase } = require('../utils/caseConverter');
 
 /**
  * GET /api/modeles
- * Liste toutes les versions du modèle (historique + active).
+ * Liste toutes les versions du modèle (l'ancienne et l'active).
  */
 async function listModeles(req, res, next) {
   try {
@@ -16,9 +16,9 @@ async function listModeles(req, res, next) {
 }
 
 /**
- * POST /api/modeles  (admin)
- * Enregistre une nouvelle version de modèle entraînée par l'équipe ML.
- * Ne l'active pas automatiquement : cf. mettreAJourModele() / deployer().
+ * POST /api/modeles (admin)
+ * Enregistre une nouvelle version du modèle entraînée par l'équipe ML.
+ * Elle n'est pas activée automatiquement, voir activer() ci-dessous.
  */
 async function creerModele(req, res, next) {
   try {
@@ -46,13 +46,12 @@ async function creerModele(req, res, next) {
 }
 
 /**
- * POST /api/modeles/:id/activer  (admin)
- * Correspond à Administrateur.mettreAJourModele() / ModeleML.deployer().
- * Une seule version active à la fois : désactive les autres dans une transaction.
+ * POST /api/modeles/:id/activer (admin)
+ * Active une version du modèle. Une seule version est active à la fois :
+ * les autres sont désactivées dans la même transaction.
  *
- * IMPORTANT : dès qu'une nouvelle version est activée, toute estimation en cache
- * générée par une version différente devient automatiquement obsolète, puisque
- * la recherche de cache filtre sur id_modele = modèle actif (cf. estimationService).
+ * Attention : le cache est lié au modèle actif. Dès qu'on active une autre
+ * version, les anciennes estimations ne sont plus réutilisées.
  */
 async function activerModele(req, res, next) {
   const t = await sequelize.transaction();

@@ -1,10 +1,28 @@
 const { Op } = require('sequelize');
 const { CatalogueVehicule } = require('../models');
 const { toCamelCase } = require('../utils/caseConverter');
+const mlService = require('../services/mlService');
+
+/**
+ * GET /api/catalogue/domaine
+ * Renvoie ce que le modèle ML connaît : les villes et les bornes (année,
+ * kilométrage, puissance fiscale). Le formulaire s'en sert pour ne pas
+ * laisser saisir une valeur que le modèle n'a jamais vue.
+ */
+async function getDomaineEntrainement(req, res, next) {
+  try {
+    const domaine = await mlService.getDomaine();
+    res.json(domaine);
+  } catch (err) {
+    // Si le service ML est arrêté, on n'empêche pas d'afficher le formulaire :
+    // on renvoie juste qu'il n'y a pas de restriction pour l'instant.
+    res.json({ villes: [], limites: null, indisponible: true });
+  }
+}
 
 /**
  * GET /api/catalogue/marques
- * Alimente la liste déroulante "marque" du formulaire.
+ * Remplit la liste déroulante des marques du formulaire.
  */
 async function getMarques(req, res, next) {
   try {
@@ -20,7 +38,7 @@ async function getMarques(req, res, next) {
 
 /**
  * GET /api/catalogue/modeles?marque=Dacia
- * Alimente la liste déroulante "modèle", dépendante de la marque choisie.
+ * Remplit la liste des modèles, selon la marque choisie.
  */
 async function getModelesByMarque(req, res, next) {
   try {
@@ -40,7 +58,7 @@ async function getModelesByMarque(req, res, next) {
 
 /**
  * GET /api/catalogue
- * Liste complète (pagination), utile côté admin.
+ * Liste complète avec pagination (utilisée côté admin).
  */
 async function getCatalogue(req, res, next) {
   try {
@@ -75,8 +93,8 @@ async function getCatalogue(req, res, next) {
 }
 
 /**
- * POST /api/catalogue  (admin)
- * Correspond à CatalogueVehicule.ajouterReference()
+ * POST /api/catalogue (admin)
+ * Ajoute une référence marque / modèle.
  */
 async function ajouterReference(req, res, next) {
   try {
@@ -101,8 +119,8 @@ async function ajouterReference(req, res, next) {
 }
 
 /**
- * PUT /api/catalogue/:id  (admin)
- * Correspond à CatalogueVehicule.modifierReference()
+ * PUT /api/catalogue/:id (admin)
+ * Modifie une référence.
  */
 async function modifierReference(req, res, next) {
   try {
@@ -126,7 +144,7 @@ async function modifierReference(req, res, next) {
 }
 
 /**
- * DELETE /api/catalogue/:id  (admin)
+ * DELETE /api/catalogue/:id (admin)
  */
 async function supprimerReference(req, res, next) {
   try {
@@ -140,6 +158,7 @@ async function supprimerReference(req, res, next) {
 }
 
 module.exports = {
+  getDomaineEntrainement,
   getMarques,
   getModelesByMarque,
   getCatalogue,

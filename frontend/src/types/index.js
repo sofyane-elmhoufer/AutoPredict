@@ -1,7 +1,5 @@
-// Constantes alignées sur le diagramme de classes du cahier des charges
-// AutoPredict. En JavaScript on n'a plus d'interfaces : ces valeurs servent
-// à remplir les <select> et à documenter la forme des objets échangés
-// avec l'API (voir les commentaires JSDoc ci-dessous à titre de référence).
+// Constantes du formulaire (listes déroulantes) et description des objets
+// échangés avec l'API. Les commentaires JSDoc plus bas servent de référence.
 
 export const CARBURANTS = ["ESSENCE", "DIESEL", "HYBRIDE", "ELECTRIQUE", "GPL"];
 export const BOITES_VITESSES = ["MANUELLE", "AUTOMATIQUE"];
@@ -17,8 +15,8 @@ export const ETATS_VEHICULE = ["EXCELLENT", "BON", "MOYEN", "A_REPARER"];
  * @property {string} boiteVitesses - une valeur de BOITES_VITESSES
  * @property {number} puissanceFiscale
  * @property {string} etatVehicule - une valeur de ETATS_VEHICULE
- * @property {string} ville
- * @property {number} nombreProprietaires
+ * @property {string} ville - une valeur reconnue du domaine ML (cf. /catalogue/domaine)
+ * @property {boolean} premiereMain
  */
 
 /**

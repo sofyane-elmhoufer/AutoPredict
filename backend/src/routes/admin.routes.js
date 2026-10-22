@@ -3,7 +3,7 @@ const router = express.Router();
 const adminController = require('../controllers/admin.controller');
 const { requireAuth, requireRole } = require('../middlewares/auth.middleware');
 
-// Toutes les routes de ce fichier sont réservées à l'ADMINISTRATEUR
+// Toutes ces routes sont réservées aux administrateurs
 router.use(requireAuth, requireRole('ADMINISTRATEUR'));
 
 router.get('/dashboard', adminController.getDashboard);

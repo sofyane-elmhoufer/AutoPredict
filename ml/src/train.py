@@ -1,23 +1,21 @@
 """
-=============================================================================
- AutoPredict - train.py
- Entraînement, comparaison et sauvegarde du modèle de prédiction de prix
-=============================================================================
-Ce script :
-  1. charge le dataset nettoyé (data/processed/cars_clean.csv)
-  2. construit un pipeline de préprocessing (encodage + normalisation)
-  3. entraîne plusieurs modèles de régression et les compare
-  4. sauvegarde le meilleur modèle (pipeline complet) + ses métriques
+train.py : entraînement, comparaison et sauvegarde du modèle de prix.
 
-Utilisation :
-    python train.py
+Ce que fait le script :
+  1. charge le dataset nettoyé (data/processed/cars_clean.csv)
+  2. entraîne plusieurs modèles de régression et compare leurs scores
+  3. sauvegarde le meilleur modèle dans models/ avec ses métriques
+
+Il écrit aussi deux petits fichiers JSON (domaine d'entraînement et catalogue
+des véhicules) que le backend utilise pour le formulaire et pour le seed.
+
+Lancement :
+    python src/train.py
 """
 
-# =============================================================================
-# 1. IMPORTS
-# =============================================================================
 import os
 import json
+
 import joblib
 import numpy as np
 import pandas as pd
@@ -30,6 +28,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 
+# xgboost est optionnel : s'il n'est pas installé, on compare les autres modèles
 try:
     from xgboost import XGBRegressor
     XGBOOST_DISPONIBLE = True
@@ -37,14 +36,13 @@ except ImportError:
     XGBOOST_DISPONIBLE = False
 
 
-# =============================================================================
-# 2. CONFIGURATION
-# =============================================================================
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # -> ml/
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # dossier ml/
 PROCESSED_PATH = os.path.join(BASE_DIR, "data", "processed", "cars_clean.csv")
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 MODEL_PATH = os.path.join(MODELS_DIR, "model_prix.joblib")
 METRICS_PATH = os.path.join(MODELS_DIR, "metrics.json")
+DOMAINE_PATH = os.path.join(MODELS_DIR, "domaine_entrainement.json")
+CATALOGUE_PATH = os.path.join(MODELS_DIR, "catalogue_vehicules.json")
 
 RANDOM_STATE = 42
 TEST_SIZE = 0.2
@@ -57,19 +55,14 @@ FEATURES_CATEGORIELLES = [
 TARGET = "prix"
 
 
-# =============================================================================
-# 3. CHARGEMENT DES DONNÉES
-# =============================================================================
 def load_processed_data(path: str = PROCESSED_PATH) -> pd.DataFrame:
     df = pd.read_csv(path)
     print(f"[load_processed_data] Dataset chargé : {df.shape[0]} lignes, {df.shape[1]} colonnes")
     return df
 
 
-# =============================================================================
-# 4. SPLIT TRAIN / TEST
-# =============================================================================
 def split_data(df: pd.DataFrame):
+    """Sépare les données : 80 % pour l'entraînement, 20 % pour le test."""
     X = df[FEATURES_NUMERIQUES + FEATURES_CATEGORIELLES]
     y = df[TARGET]
     X_train, X_test, y_train, y_test = train_test_split(
@@ -79,15 +72,12 @@ def split_data(df: pd.DataFrame):
     return X_train, X_test, y_train, y_test
 
 
-# =============================================================================
-# 5. PRÉPROCESSING (encodage catégoriel + normalisation numérique)
-# =============================================================================
 def build_preprocessor() -> ColumnTransformer:
     """
-    - variables numériques -> standardisation (utile pour la régression linéaire,
-      neutre pour les modèles à base d'arbres)
-    - variables catégorielles -> one-hot encoding (handle_unknown='ignore' pour
-      absorber les catégories jamais vues en production, ex. nouvelle ville)
+    - colonnes numériques : standardisation (utile pour la régression linéaire,
+      ça ne change rien pour les arbres)
+    - colonnes catégorielles : one-hot encoding. handle_unknown="ignore" évite
+      que le modèle plante si une valeur n'a jamais été vue à l'entraînement
     """
     return ColumnTransformer(
         transformers=[
@@ -97,15 +87,8 @@ def build_preprocessor() -> ColumnTransformer:
     )
 
 
-# =============================================================================
-# 6. DÉFINITION DES MODÈLES À COMPARER
-# =============================================================================
 def build_candidate_models() -> dict:
-    """
-    Le prix étant fortement asymétrique (queue de distribution vers le haut),
-    chaque modèle est enveloppé dans un TransformedTargetRegressor qui
-    entraîne sur log(1 + prix) puis retransforme la prédiction en MAD réels.
-    """
+    """Les modèles qu'on compare. Les hyperparamètres sont ceux qu'on a retenus après quelques essais."""
     modeles = {
         "LinearRegression": LinearRegression(),
         "RandomForest": RandomForestRegressor(
@@ -127,6 +110,11 @@ def build_candidate_models() -> dict:
 
 
 def wrap_with_pipeline(preprocessor: ColumnTransformer, modele) -> Pipeline:
+    """
+    Les prix sont très étalés vers le haut, donc chaque modèle s'entraîne sur
+    log(1 + prix). TransformedTargetRegressor refait l'opération inverse à la
+    prédiction et renvoie un prix en MAD.
+    """
     base_pipeline = Pipeline(steps=[
         ("preprocessing", preprocessor),
         ("regressor", modele),
@@ -136,9 +124,6 @@ def wrap_with_pipeline(preprocessor: ColumnTransformer, modele) -> Pipeline:
     )
 
 
-# =============================================================================
-# 7. ENTRAÎNEMENT + COMPARAISON DES MODÈLES
-# =============================================================================
 def evaluate_model(model, X_test, y_test) -> dict:
     y_pred = model.predict(X_test)
     return {
@@ -149,7 +134,7 @@ def evaluate_model(model, X_test, y_test) -> dict:
 
 
 def train_and_compare(X_train, X_test, y_train, y_test, preprocessor) -> tuple:
-    """Entraîne chaque modèle candidat, l'évalue, et retourne le meilleur (par R2 test)."""
+    """Entraîne chaque modèle, l'évalue sur le jeu de test et renvoie le meilleur (R2 le plus haut)."""
     resultats = {}
     modeles_entraines = {}
 
@@ -157,7 +142,7 @@ def train_and_compare(X_train, X_test, y_train, y_test, preprocessor) -> tuple:
         print(f"\n[train_and_compare] Entraînement : {nom}")
         pipeline = wrap_with_pipeline(preprocessor, modele)
 
-        # Validation croisée sur le train set (robustesse de l'estimation)
+        # validation croisée sur le train pour vérifier que le score est stable
         cv_scores = cross_val_score(pipeline, X_train, y_train, cv=5, scoring="r2", n_jobs=-1)
         print(f"  -> R2 cross-val (5 folds) : {cv_scores.mean():.4f} (+/- {cv_scores.std():.4f})")
 
@@ -174,10 +159,8 @@ def train_and_compare(X_train, X_test, y_train, y_test, preprocessor) -> tuple:
     return meilleur_nom, modeles_entraines[meilleur_nom], resultats
 
 
-# =============================================================================
-# 8. IMPORTANCE DES VARIABLES (si modèle à base d'arbres)
-# =============================================================================
 def print_feature_importance(model, top_n: int = 15) -> None:
+    """Affiche les variables les plus importantes (seulement pour les modèles à base d'arbres)."""
     inner_pipeline = model.regressor_
     regressor = inner_pipeline.named_steps["regressor"]
     if not hasattr(regressor, "feature_importances_"):
@@ -193,10 +176,8 @@ def print_feature_importance(model, top_n: int = 15) -> None:
         print(f"  {nom:35s} {imp:.4f}")
 
 
-# =============================================================================
-# 9. SAUVEGARDE DU MODÈLE ET DES MÉTRIQUES
-# =============================================================================
 def save_model(model, nom_modele: str, resultats: dict) -> None:
+    """Sauvegarde le modèle (joblib) et un fichier metrics.json avec les scores."""
     os.makedirs(MODELS_DIR, exist_ok=True)
     joblib.dump(model, MODEL_PATH)
     print(f"\n[save_model] Modèle sauvegardé -> {MODEL_PATH}")
@@ -212,9 +193,57 @@ def save_model(model, nom_modele: str, resultats: dict) -> None:
     print(f"[save_model] Métriques sauvegardées -> {METRICS_PATH}")
 
 
-# =============================================================================
-# 10. EXÉCUTION DU SCRIPT
-# =============================================================================
+def save_domaine_entrainement(df: pd.DataFrame) -> None:
+    """
+    Sauvegarde ce que le modèle a réellement vu pendant l'entraînement : les
+    villes et les plages de valeurs (année, kilométrage, puissance fiscale).
+    Le backend et le formulaire s'en servent pour ne pas laisser saisir une
+    valeur que le modèle ne connaît pas.
+    """
+    villes = sorted(v for v in df["ville"].unique() if v not in ("Autre", "Inconnu"))
+
+    domaine = {
+        "villes": villes,
+        "limites": {
+            "annee": {"min": int(df["annee"].min()), "max": int(df["annee"].max())},
+            "kilometrage": {"min": int(df["kilometrage"].min()), "max": int(df["kilometrage"].max())},
+            "puissanceFiscale": {
+                "min": int(df["puissance_fiscale"].min()),
+                "max": int(df["puissance_fiscale"].max()),
+            },
+        },
+    }
+
+    os.makedirs(MODELS_DIR, exist_ok=True)
+    with open(DOMAINE_PATH, "w", encoding="utf-8") as f:
+        json.dump(domaine, f, ensure_ascii=False, indent=2)
+    print(f"[save_domaine_entrainement] Domaine d'entraînement sauvegardé -> {DOMAINE_PATH}")
+    print(f"[save_domaine_entrainement] {len(villes)} villes reconnues par le modèle.")
+
+
+def save_catalogue(df: pd.DataFrame) -> None:
+    """
+    Liste des couples marque / modèle présents dans les données, avec la
+    première et la dernière année vues pour chacun. Le seed du backend s'en
+    sert pour remplir le catalogue (listes déroulantes du formulaire).
+    """
+    groupes = df.groupby(["marque", "modele"])["annee"].agg(["min", "max"]).reset_index()
+    catalogue = [
+        {
+            "marque": ligne.marque,
+            "modele": ligne.modele,
+            "anneeMin": int(ligne.min),
+            "anneeMax": int(ligne.max),
+        }
+        for ligne in groupes.itertuples(index=False)
+    ]
+
+    os.makedirs(MODELS_DIR, exist_ok=True)
+    with open(CATALOGUE_PATH, "w", encoding="utf-8") as f:
+        json.dump(catalogue, f, ensure_ascii=False, indent=2)
+    print(f"[save_catalogue] {len(catalogue)} références marque/modèle sauvegardées -> {CATALOGUE_PATH}")
+
+
 def main():
     df = load_processed_data()
     X_train, X_test, y_train, y_test = split_data(df)
@@ -229,6 +258,8 @@ def main():
 
     print_feature_importance(meilleur_modele)
     save_model(meilleur_modele, meilleur_nom, resultats)
+    save_domaine_entrainement(df)
+    save_catalogue(df)
 
 
 if __name__ == "__main__":

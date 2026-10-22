@@ -6,8 +6,8 @@ const estimationService = require('../services/estimationService');
 
 /**
  * POST /api/estimations
- * Point d'entrée principal : soumettreFormulaire().
- * Accessible au Visiteur (req.user peut être null) et à l'Utilisateur connecté.
+ * Calcule une estimation. Un visiteur peut l'utiliser (req.user vaut alors
+ * null) comme un utilisateur connecté.
  */
 async function creerEstimation(req, res, next) {
   try {
@@ -23,7 +23,7 @@ async function creerEstimation(req, res, next) {
 
 /**
  * GET /api/estimations
- * Historique de l'utilisateur connecté, avec pagination simple.
+ * Historique de l'utilisateur connecté, avec pagination.
  */
 async function getHistorique(req, res, next) {
   try {
@@ -57,6 +57,7 @@ async function getEstimationById(req, res, next) {
   try {
     const estimation = await Estimation.findOne({
       where: { id_estimation: req.params.id, id_utilisateur: req.user.id },
+      include: [{ model: ModeleML, as: 'modeleUtilise', attributes: ['nom_version'] }],
     });
     if (!estimation) return res.status(404).json({ message: 'Estimation introuvable.' });
     res.json({ estimation: estimationService.formatResultat(estimation, estimation.source_resultat) });
@@ -67,7 +68,7 @@ async function getEstimationById(req, res, next) {
 
 /**
  * DELETE /api/estimations/:id
- * Correspond à Estimation.supprimer()
+ * Supprime une estimation de l'historique.
  */
 async function supprimerEstimation(req, res, next) {
   try {
@@ -85,7 +86,7 @@ async function supprimerEstimation(req, res, next) {
 /**
  * POST /api/estimations/comparer
  * Body : { ids: [1, 2, 3] }
- * Comparaison de plusieurs estimations entre elles.
+ * Compare plusieurs estimations entre elles.
  */
 async function comparerEstimations(req, res, next) {
   try {
@@ -96,6 +97,7 @@ async function comparerEstimations(req, res, next) {
 
     const estimations = await Estimation.findAll({
       where: { id_estimation: { [Op.in]: ids }, id_utilisateur: req.user.id },
+      include: [{ model: ModeleML, as: 'modeleUtilise', attributes: ['nom_version'] }],
     });
 
     res.json({
@@ -108,7 +110,7 @@ async function comparerEstimations(req, res, next) {
 
 /**
  * GET /api/estimations/:id/export?format=pdf|csv
- * Correspond à Estimation.exporter()
+ * Télécharge une estimation en PDF ou en CSV.
  */
 async function exporterEstimation(req, res, next) {
   try {
@@ -126,7 +128,7 @@ async function exporterEstimation(req, res, next) {
       return res.send(csv);
     }
 
-    // Export PDF par défaut
+    // Sinon, PDF par défaut
     const doc = new PDFDocument({ margin: 50 });
     res.header('Content-Type', 'application/pdf');
     res.attachment(`estimation_${estimation.id_estimation}.pdf`);
@@ -141,6 +143,7 @@ async function exporterEstimation(req, res, next) {
     doc.text(`Puissance fiscale : ${estimation.puissance_fiscale} CV`);
     doc.text(`Ville : ${estimation.ville}`);
     doc.text(`État : ${estimation.etat_vehicule}`);
+    doc.text(`Première main : ${estimation.premiere_main ? 'Oui' : 'Non'}`);
     doc.moveDown();
     doc.fontSize(14).text(`Prix estimé : ${estimation.prix_estime} DH`, { underline: true });
     doc.fontSize(12).text(

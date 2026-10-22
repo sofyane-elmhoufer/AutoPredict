@@ -8,20 +8,20 @@ export function AdminCache() {
     queryFn: getTauxReutilisationCache,
   });
 
-  if (isLoading) return <p className="text-gray-500">Chargement...</p>;
+  if (isLoading) return <p className="text-asphalt-500">Chargement...</p>;
 
   const data = [
     { name: "Servies depuis le cache", value: taux ?? 0 },
     { name: "Nouvelles prédictions", value: 100 - (taux ?? 0) },
   ];
-  const colors = ["#1f7a4d", "#d1d5db"];
+  const colors = ["#D9A441", "#D8DBD4"];
 
   return (
-    <div className="rounded-lg border bg-white p-6">
-      <h2 className="mb-4 font-semibold">
-        Taux de réutilisation du cache : {(taux ?? 0).toFixed(1)} %
+    <div className="card p-6">
+      <h2 className="mb-1 font-display text-lg font-semibold text-ink-800">
+        Taux de réutilisation du cache : <span className="text-ochre-600">{(taux ?? 0).toFixed(1)} %</span>
       </h2>
-      <p className="mb-4 text-sm text-gray-500">
+      <p className="mb-4 text-sm text-asphalt-500">
         Proportion des estimations servies directement depuis la base de données
         (sans nouvel appel au modèle ML) par rapport aux nouveaux calculs.
       </p>

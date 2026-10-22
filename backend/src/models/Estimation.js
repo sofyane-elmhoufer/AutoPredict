@@ -10,23 +10,23 @@ Estimation.init(
       primaryKey: true,
       autoIncrement: true,
     },
-    // ENREGISTRER : Utilisateur (0,N) -- Estimation (0,1) -> null si Visiteur
+    // Utilisateur qui a fait la demande (null si c'est un visiteur)
     id_utilisateur: {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
-    // CONCERNER : Estimation (1,1) -- CatalogueVehicule (0,N)
+    // Référence du catalogue correspondant au véhicule
     id_vehicule_ref: {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
-    // GENERER : ModeleML (1,1) -- Estimation (0,N)
+    // Version du modèle ML qui a donné le résultat
     id_modele: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
 
-    // Caractéristiques déclaratives du véhicule (formulaire)
+    // Caractéristiques saisies dans le formulaire
     marque: { type: DataTypes.STRING(80), allowNull: false },
     modele: { type: DataTypes.STRING(80), allowNull: false },
     annee: { type: DataTypes.INTEGER, allowNull: false },
@@ -45,11 +45,12 @@ Estimation.init(
     },
     puissance_fiscale: { type: DataTypes.INTEGER, allowNull: false },
     ville: { type: DataTypes.STRING(80), allowNull: false },
-    nombre_proprietaires: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
+    premiere_main: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+    nb_reutilisations: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
 
-    // --- Mécanisme de cache ---
+    // Cache : empreinte des caractéristiques
     hash_caracteristiques: {
-      type: DataTypes.STRING(64), // SHA-256 -> 64 caractères hex
+      type: DataTypes.STRING(64), // SHA-256 = 64 caractères hexadécimaux
       allowNull: false,
     },
     source_resultat: {
@@ -57,12 +58,12 @@ Estimation.init(
       allowNull: false,
     },
 
-    // Résultat
+    // Résultat de l'estimation
     prix_estime: { type: DataTypes.FLOAT, allowNull: false },
     marge_confiance_min: { type: DataTypes.FLOAT, allowNull: false },
     marge_confiance_max: { type: DataTypes.FLOAT, allowNull: false },
     facteurs_explicatifs: {
-      type: DataTypes.JSON, // sortie type SHAP : [{feature, impact}, ...]
+      type: DataTypes.JSON, // [{feature, impact}, ...] : importance de chaque variable dans le modèle
       allowNull: true,
     },
 
@@ -77,7 +78,7 @@ Estimation.init(
     modelName: 'Estimation',
     tableName: 'estimation',
     indexes: [
-      // Index composite : accès en un seul hit pour vérifier le cache
+      // Index sur (hash, modèle) pour retrouver vite une estimation du cache
       { fields: ['hash_caracteristiques', 'id_modele'], name: 'idx_cache_lookup' },
       { fields: ['id_utilisateur'] },
     ],

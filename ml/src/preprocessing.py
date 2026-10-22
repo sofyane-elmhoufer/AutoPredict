@@ -1,36 +1,28 @@
 """
-=============================================================================
- AutoPredict - preprocessing.py
- Nettoyage et préparation du dataset Avito (véhicules d'occasion - Maroc)
-=============================================================================
-Ce script lit le fichier brut (data/raw/avito_car_dataset_ALL.csv), ne garde
-que les colonnes utiles au modèle, nettoie / transforme les valeurs, gère les
-valeurs manquantes et les outliers, puis sauvegarde un dataset propre dans
-data/processed/.
+preprocessing.py : nettoyage du dataset Avito (voitures d'occasion au Maroc).
 
-Utilisation :
-    python preprocessing.py
+On part du fichier brut data/raw/avito_car_dataset_ALL.csv, on garde les
+colonnes utiles, on nettoie et on sauvegarde le résultat dans
+data/processed/cars_clean.csv.
+
+Lancement :
+    python src/preprocessing.py
 """
 
-# =============================================================================
-# 1. IMPORTS
-# =============================================================================
 import os
 import re
+
 import numpy as np
 import pandas as pd
 
-
-# =============================================================================
-# 2. CONFIGURATION
-# =============================================================================
-# Chemins relatifs au dossier "ml/" (indépendants du dossier courant d'exécution)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # -> ml/
+# Les chemins sont calculés à partir de l'emplacement du fichier, comme ça le
+# script marche peu importe d'où on le lance.
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # dossier ml/
 RAW_PATH = os.path.join(BASE_DIR, "data", "raw", "avito_car_dataset_ALL.csv")
 PROCESSED_DIR = os.path.join(BASE_DIR, "data", "processed")
 PROCESSED_PATH = os.path.join(PROCESSED_DIR, "cars_clean.csv")
 
-# Colonnes retenues (les critères métier définis pour le modèle)
+# Colonnes du fichier brut qu'on garde (la dernière, "Prix", c'est la cible)
 COLONNES_A_GARDER = [
     "Marque",
     "Modèle",
@@ -42,10 +34,10 @@ COLONNES_A_GARDER = [
     "État",
     "Ville",
     "Première main",
-    "Prix",  # target
+    "Prix",
 ]
 
-# Renommage vers des noms de colonnes propres (sans accents/espaces) pour la suite du pipeline
+# Noms plus simples pour la suite (pas d'accents ni d'espaces)
 RENAME_MAP = {
     "Marque": "marque",
     "Modèle": "modele",
@@ -60,44 +52,36 @@ RENAME_MAP = {
     "Prix": "prix",
 }
 
-# Seuil de fréquence minimale pour garder une modalité de "modele"/"ville" telle quelle
-# (les modalités trop rares sont regroupées sous "Autre" pour limiter la cardinalité)
+# Un modèle ou une ville qui apparaît moins de 15 fois est regroupé dans "Autre",
+# sinon l'encodage one-hot crée trop de colonnes quasi vides.
 SEUIL_RARETE = 15
 
-# Bornes plausibles pour le prix d'un véhicule d'occasion au Maroc (en MAD)
-# Utilisées comme garde-fou avant le filtrage IQR sur le log-prix.
+# Fourchette de prix réaliste (en MAD) pour une occasion au Maroc.
+# On l'applique avant le filtre IQR pour virer les erreurs de saisie grossières.
 PRIX_MIN_PLAUSIBLE = 8_000
 PRIX_MAX_PLAUSIBLE = 2_000_000
 
 
-# =============================================================================
-# 3. CHARGEMENT DES DONNÉES BRUTES
-# =============================================================================
 def load_raw_data(path: str = RAW_PATH) -> pd.DataFrame:
-    """Charge le CSV brut Avito (encodage latin-1)."""
+    """Charge le CSV brut (il est encodé en latin-1)."""
     df = pd.read_csv(path, encoding="latin-1")
     print(f"[load_raw_data] Fichier chargé : {df.shape[0]} lignes, {df.shape[1]} colonnes")
     return df
 
 
-# =============================================================================
-# 4. SÉLECTION DES COLONNES UTILES
-# =============================================================================
 def select_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Ne garde que les colonnes nécessaires au modèle (features + target)."""
+    """Garde uniquement les colonnes utiles et les renomme."""
     df = df[COLONNES_A_GARDER].copy()
     df = df.rename(columns=RENAME_MAP)
     print(f"[select_columns] Colonnes conservées : {list(df.columns)}")
     return df
 
 
-# =============================================================================
-# 5. TRANSFORMATION DU KILOMÉTRAGE (plage textuelle -> valeur numérique)
-# =============================================================================
 def parse_kilometrage(valeur: str) -> float:
     """
-    Convertit une plage du type '200 000 - 249 999' en sa valeur médiane (224999.5).
-    Retourne np.nan si la valeur est manquante ou mal formée.
+    Sur Avito le kilométrage est une tranche, par exemple '200 000 - 249 999'.
+    On la remplace par le milieu de la tranche (224999.5).
+    Renvoie NaN si la valeur est vide ou illisible.
     """
     if pd.isna(valeur):
         return np.nan
@@ -111,21 +95,18 @@ def parse_kilometrage(valeur: str) -> float:
 
 
 def transform_kilometrage(df: pd.DataFrame) -> pd.DataFrame:
-    """Applique parse_kilometrage et remplace la colonne texte par une colonne numérique."""
+    """Applique parse_kilometrage sur toute la colonne."""
     df["kilometrage"] = df["kilometrage"].apply(parse_kilometrage)
     n_missing = df["kilometrage"].isna().sum()
-    print(f"[transform_kilometrage] Kilométrage converti en numérique ({n_missing} valeurs manquantes)")
+    print(f"[transform_kilometrage] Kilométrage converti en nombre ({n_missing} valeurs manquantes)")
     return df
 
 
-# =============================================================================
-# 6. NETTOYAGE DES VALEURS MANQUANTES / ABERRANTES DANS LES COLONNES CATÉGORIELLES
-# =============================================================================
 def clean_categorical(df: pd.DataFrame) -> pd.DataFrame:
     """
-    - Remplace les marqueurs de valeur manquante ('--') par NaN
-    - Impute les catégories manquantes par 'Inconnu' (catégorie explicite,
-      plus informative qu'une suppression de ligne)
+    Dans le fichier brut, '--' veut dire "non renseigné" pour la boîte de vitesses.
+    On le remplace par NaN, puis tous les NaN des colonnes catégorielles
+    deviennent "Inconnu". On préfère garder la ligne que la supprimer.
     """
     df["boite_vitesses"] = df["boite_vitesses"].replace("--", np.nan)
 
@@ -142,11 +123,8 @@ def clean_categorical(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# =============================================================================
-# 7. REGROUPEMENT DES MODALITÉS RARES (réduction de cardinalité)
-# =============================================================================
 def regrouper_modalites_rares(df: pd.DataFrame, colonne: str, seuil: int = SEUIL_RARETE) -> pd.DataFrame:
-    """Remplace les modalités apparaissant moins de `seuil` fois par 'Autre'."""
+    """Les valeurs vues moins de `seuil` fois dans la colonne deviennent 'Autre'."""
     freq = df[colonne].value_counts()
     rares = freq[freq < seuil].index
     n_rares = len(rares)
@@ -155,26 +133,21 @@ def regrouper_modalites_rares(df: pd.DataFrame, colonne: str, seuil: int = SEUIL
     return df
 
 
-# =============================================================================
-# 8. SUPPRESSION DES LIGNES DUPLIQUÉES
-# =============================================================================
 def drop_duplicates(df: pd.DataFrame) -> pd.DataFrame:
+    """Supprime les annonces en double (le même véhicule posté plusieurs fois)."""
     n_before = len(df)
     df = df.drop_duplicates()
     print(f"[drop_duplicates] {n_before - len(df)} doublons supprimés")
     return df
 
 
-# =============================================================================
-# 9. TRAITEMENT DES OUTLIERS SUR LE PRIX (target)
-# =============================================================================
 def remove_price_outliers(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Le prix brut contient des valeurs aberrantes extrêmes (ex. erreurs de saisie
-    avec des zéros en trop : prix > 600 millions de MAD). On applique :
-      1. un garde-fou métier (prix plausible pour un véhicule d'occasion au Maroc)
-      2. un filtrage IQR sur le log(prix), plus robuste sur une distribution
-         fortement asymétrique que l'IQR sur le prix brut.
+    Il y a des prix complètement faux (erreurs de saisie, par exemple plus de
+    600 millions de MAD). Deux étapes :
+      1. on garde seulement les prix dans la fourchette réaliste ci-dessus
+      2. on applique la règle de l'IQR sur log(prix), plus adaptée que sur le
+         prix brut parce que la distribution est très étalée vers le haut
     """
     n_before = len(df)
     df = df[(df["prix"] >= PRIX_MIN_PLAUSIBLE) & (df["prix"] <= PRIX_MAX_PLAUSIBLE)]
@@ -192,21 +165,16 @@ def remove_price_outliers(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# =============================================================================
-# 10. SUPPRESSION DES LIGNES SANS KILOMÉTRAGE (feature indispensable)
-# =============================================================================
 def drop_missing_essentials(df: pd.DataFrame) -> pd.DataFrame:
+    """Supprime les lignes où il manque une valeur numérique indispensable."""
     n_before = len(df)
     df = df.dropna(subset=["kilometrage", "annee", "puissance_fiscale"])
-    print(f"[drop_missing_essentials] {n_before - len(df)} lignes supprimées (features numériques essentielles manquantes)")
+    print(f"[drop_missing_essentials] {n_before - len(df)} lignes supprimées (valeurs numériques manquantes)")
     return df
 
 
-# =============================================================================
-# 11. PIPELINE COMPLET DE NETTOYAGE
-# =============================================================================
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
-    """Enchaîne toutes les étapes de nettoyage sur le dataframe brut."""
+    """Enchaîne toutes les étapes de nettoyage, dans l'ordre."""
     df = select_columns(df)
     df = transform_kilometrage(df)
     df = clean_categorical(df)
@@ -219,18 +187,13 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# =============================================================================
-# 12. SAUVEGARDE DU DATASET NETTOYÉ
-# =============================================================================
 def save_processed(df: pd.DataFrame, path: str = PROCESSED_PATH) -> None:
+    """Écrit le dataset nettoyé dans data/processed/."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
     df.to_csv(path, index=False)
     print(f"[save_processed] Dataset nettoyé sauvegardé -> {path} ({df.shape[0]} lignes, {df.shape[1]} colonnes)")
 
 
-# =============================================================================
-# 13. EXÉCUTION DU SCRIPT
-# =============================================================================
 def main():
     df_raw = load_raw_data()
     df_clean = clean_data(df_raw)
