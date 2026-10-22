@@ -128,6 +128,6 @@ Comptes de démonstration créés par le seed :
 
 ## Équipe
 
-- **Sofyane** ([@Sofyane00](https://github.com/Sofyane00)) : données, modèle ML et service de prédiction
+- **Sofyane** ([@sofyane-elmhoufer](https://github.com/sofyane-elmhoufer)) : données, modèle ML et service de prédiction
 - **Othmane** ([@othmaneelmghari](https://github.com/othmaneelmghari)) : backend
 - **Mohammed** ([@El-abbadi05](https://github.com/El-abbadi05)) : frontend
